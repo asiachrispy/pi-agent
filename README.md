@@ -15,12 +15,12 @@
 |------|------|------------------------------|--------------------------|
 | `pi` | 引擎 / CLI | `asiachrispy/pi` | `earendil-works/pi` |
 | `pi-web` | 纯浏览器 Web fork | `asiachrispy/pi-web` | `agegr/pi-web` |
-| `pi-app` | macOS 桌面 fork（主线） | `asiachrispy/pi-app` | `agegr/pi-web` |
+| `pi-app` | macOS 桌面 fork（主线） | `asiachrispy/pi-app` | `asiachrispy/pi-web`（分层·见下） |
 | `pi-fetch-tool` | pi 扩展（`web_fetch` 工具） | `asiachrispy/pi-fetch-tool` | —（独立扩展包） |
 
 > ⚠️ **关键约束**：源头 `agegr/pi-web` 与 `earendil-works/pi` 我们**无写权限**（只读 `upstream`）。但我们对每条线都有**可写的 fork**（`asiachrispy/*`），二次开发都落在 fork 上。对共有文件的改动（如 i18n）是**无法回馈源头的永久 fork 差异**，治理目标是让它「易于持续合并」而非「消除」。
 >
-> `pi-web` 与 `pi-app` 都 fork 自 `agegr/pi-web`；它们的合并链路（平行 vs 分层）见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) §5。
+> **已采用分层模型**：`agegr/pi-web` → `asiachrispy/pi-web`（共享 Web 层）→ `asiachrispy/pi-app`（桌面层）。通用 Web 改动只在 pi-web 做一次，pi-app 合并 pi-web 自动获得。详见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) §5。
 
 经探测：`earendil-works/pi` 与 `badlogic/pi-mono` 是**同一个引擎上游**；`badlogic/pi-web` 不存在——`agegr/pi-web` 即 pi-web 这条线的原创源头。
 
@@ -32,11 +32,10 @@
 graph TD
     UP1["earendil-works/pi<br/>(= badlogic/pi-mono, 引擎上游)"] -->|fork·merge| PI["asiachrispy/pi<br/>【pi-cli 引擎二次开发】"]
     PI -->|npm runtime 依赖| APP
-    UP2["agegr/pi-web<br/>(Web 只读源头)"] -->|fork·merge| WEB["asiachrispy/pi-web<br/>【pi-web 纯 Web fork】"]
-    UP2 -->|fork·merge| APP["asiachrispy/pi-app<br/>【pi-app 桌面主线】"]
+    UP2["agegr/pi-web<br/>(Web 只读源头)"] -->|fork·merge| WEB["asiachrispy/pi-web<br/>【pi-web 共享 Web 层】"]
+    WEB -->|fork·merge| APP["asiachrispy/pi-app<br/>【pi-app 桌面主线】"]
     EXT["asiachrispy/pi-fetch-tool<br/>(pi 扩展: web_fetch)"] -.->|pi install| PI
     EXT -.->|pi install| APP
-    WEB -. "可选分层(模型B):<br/>pi-app 改挂 pi-web" .-> APP
 
     classDef ours fill:#1f6feb,stroke:#0b3d91,color:#fff;
     classDef up fill:#444,stroke:#222,color:#fff;
@@ -75,11 +74,11 @@ cd pi      && git fetch upstream && git merge upstream/main && git push origin m
 # pi-web 纯 Web fork：合并上游 → 推回我们的 fork
 cd pi-web  && git fetch upstream && git merge upstream/main && git push origin main
 
-# pi-app 桌面主线：合并上游 → 推回我们的 fork
+# pi-app 桌面主线：upstream 是 asiachrispy/pi-web（分层）→ 推回我们的 fork
 cd pi-app  && git fetch upstream && git merge upstream/main && git push origin main
 ```
 
-pi-web fork 的完整合并维护（merge 策略、冲突原则、工具）见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md)。
+**分层下的合并顺序**：上游有更新时，先在 `pi-web` 合并 `agegr/pi-web` 并推送，再在 `pi-app` 合并 `pi-web`。这样通用 Web 改动和上游更新都经 pi-web 这一层统一下传，pi-app 不必直接面对 `agegr`。完整合并维护（merge 策略、冲突原则、工具）见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md)。
 
 ---
 
@@ -89,7 +88,7 @@ pi-web fork 的完整合并维护（merge 策略、冲突原则、工具）见 [
 
 1. **改动归属**
    - 引擎能力 → 优先做成**扩展包**（参考 `pi-fetch-tool`），尽量不改 `pi` 引擎源码；必须改则集中、可 rebase（载体：`asiachrispy/pi`）。
-   - **通用 Web 能力**（跨平台、非 macOS）→ 进 `asiachrispy/pi-web`（再视链路决策下传 pi-app，见维护手册 §5）。
+   - **通用 Web 能力**（跨平台、非 macOS）→ 进 `asiachrispy/pi-web`；pi-app 通过合并 pi-web 自动获得（分层链路）。
    - **macOS / 桌面 / 原生 / 产品化能力** → 进 `asiachrispy/pi-app`，尽量放在**新增独有文件**里，不碰共有文件。
    - 无论改哪条 fork 的共有文件，都力求**结构等价**（只替换字符串 / 最小插入，不重排 JSX），以便 git 三方合并能自动吃掉上游对同一文件其他部分的改动。
 2. **`pi-web` 是可写 Web fork**：在 `asiachrispy/pi-web` 上做通用 Web 二次开发，定期从 `agegr/pi-web` 合并；维护流程见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md)。
@@ -105,7 +104,7 @@ pi-web fork 的完整合并维护（merge 策略、冲突原则、工具）见 [
 |------|------|------|----------|
 | `pi` | `main` | `dcf0bbc3` | 二次开发领先 `earendil-works/pi` 约 17 提交 |
 | `pi-web` | `main` | `cde99d7` | `origin=asiachrispy/pi-web`，当前 = 上游 `agegr/pi-web`（尚无我们的改动） |
-| `pi-app` | `main` | `e336917` | 二次开发领先 `agegr/pi-web` 约 149 提交，待合并上游 0 |
+| `pi-app` | `main` | `e336917` | upstream=`asiachrispy/pi-web`；领先 149 提交，待合并上游 0 |
 
 ---
 

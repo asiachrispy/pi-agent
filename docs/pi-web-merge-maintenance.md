@@ -81,17 +81,40 @@ package-lock.json -merge linguist-generated=true
 
 ---
 
-## 5. pi-web 与 pi-app 的关系（待定的链路决策）
+## 5. pi-web 与 pi-app 的链路：已采用「分层（模型 B）」
 
-现状：`pi-web` 和 `pi-app` **都**直接以 `agegr/pi-web` 为 upstream，是两条平行 fork。
+```
+agegr/pi-web (只读源头)
+   └─merge→ asiachrispy/pi-web (共享 Web 层：通用二次开发)
+              └─merge→ asiachrispy/pi-app (桌面层：macOS 壳/原生/产品化)
+```
 
-若我们打算在 `pi-web` 沉淀**通用 Web 二次开发**（非 macOS 专属），有两种维护模型：
+`pi-app` 的 `upstream` 已改挂 `asiachrispy/pi-web`（不再直连 `agegr`）。好处：**通用 Web 改动只在 pi-web 做一次**，pi-app 合并 pi-web 即自动获得，从根上避免 pi-web / pi-app 双份维护。
 
-| 模型 | 链路 | 优点 | 代价 |
-|------|------|------|------|
-| **A 平行（现状）** | `agegr` → pi-web；`agegr` → pi-app | 简单，两线互不影响 | 通用 Web 改动要在 pi-web、pi-app **各做一遍** |
-| **B 分层（推荐）** | `agegr` → `asiachrispy/pi-web` → `asiachrispy/pi-app` | 通用改动只在 pi-web 做一次，pi-app 合并 pi-web 自动获得；真正消除重复 | pi-app 的 upstream 改为 `asiachrispy/pi-web`，多一层合并 |
+### 5.1 分层下的标准合并顺序
 
-> 选 B 时：`cd pi-app && git remote set-url upstream https://github.com/asiachrispy/pi-web.git`，此后 pi-app 合并链变为「先在 pi-web 合 agegr，再在 pi-app 合 pi-web」。当前 pi-web 尚无自有改动（= agegr），切换零成本；越早定越省事。
+上游有更新时，**自上而下**逐层合并：
 
-**判断依据**：如果 pi-web 只做零星轻改 → A 足够；如果 pi-web 要成为「我们共享的 Web 底座」→ 选 B，从根上避免 pi-web/pi-app 双份维护。
+```bash
+# 1) 先让共享 Web 层吸收源头更新
+cd pi-web
+git fetch upstream && git merge upstream/main   # upstream = agegr/pi-web
+npm install && npm run lint && npx tsc --noEmit
+git push origin main
+
+# 2) 再让桌面层吸收共享层（含上游更新 + 我们的通用 Web 改动）
+cd ../pi-app
+git fetch upstream && git merge upstream/main   # upstream = asiachrispy/pi-web
+npm install && npx tsc --noEmit && npx vitest run
+git push origin main
+```
+
+### 5.2 改动落点速记
+
+| 改动类型 | 落到哪个 fork |
+|----------|--------------|
+| 通用 Web（对话/分支/会话/UI，跨平台） | `asiachrispy/pi-web` |
+| macOS 壳 / 原生桥 / PWA / 远程 / 推送 / 产品化 | `asiachrispy/pi-app`（尽量新增独有文件） |
+| 引擎能力 | `asiachrispy/pi`（优先做成扩展包） |
+
+> 注意：pi-app 历史上已有大量「本应属于通用 Web」的改动（149 提交）。新通用改动请放 pi-web；存量可在后续逐步「上移」到 pi-web 以减少 pi-app 对共有文件的偏离（非紧急）。
