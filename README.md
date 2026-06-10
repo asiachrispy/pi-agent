@@ -95,3 +95,9 @@ cd pi-app && git fetch upstream && git merge upstream/main
 | `pi` | `main` | `dcf0bbc3` | 二次开发领先 `earendil-works/pi` 约 17 提交 |
 | `pi-web` | `main` | `cde99d7` | 即源头 |
 | `pi-app` | `main` | `e336917` | 二次开发领先 `agegr/pi-web` 约 149 提交，待合并上游 0 |
+
+---
+
+## 7. 相关文档
+
+- [`docs/conflict-audit.md`](docs/conflict-audit.md) — pi-app ↔ pi-web 合并冲突审计：49 个共有文件冲突地雷清单、i18n 头号根因分析、按性价比排序的重构建议。
