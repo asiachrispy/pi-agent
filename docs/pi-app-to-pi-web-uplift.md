@@ -75,9 +75,11 @@
 | 会话恢复/历史 (`2245e54`) | 依赖 pi-app `product-sessions` API | 产品化专属 → 留 pi-app |
 | per-session 模型 (`100c240`) | 深改 `AccountsSettings`/`WorkbenchSettings`(pi-app 独有)+共有 | 高成本/纠缠 |
 | session-projects (`a462b1d` 等) | pi-web 无，但属 workbench 产品化模型 | 留 pi-app |
-| skill workflow + slash (`0d326d3`) | pi-web **真缺 slash 命令**，但依赖 pi-app `rpc-manager`/`agent-resource-loader` | 待评估（唯一候选） |
+| skill workflow + slash (`0d326d3`) | pi-web **真缺 slash 命令** | ✅ **已上移**(PR #4，skill 来源) |
 
-**总判断**：3 个真正干净的通用能力（终端、i18n 框架、输出文件预览）已上移合并。剩余 146 提交里，绝大多数是 ①pi-web 上游已有平行实现（应 pi-app 收敛）、②pi-app 产品化专属（留 pi-app）、③深度纠缠（高成本低确定性）。**后续重心应从「逐个上移」转为「pi-app 合并 pi-web 时收敛到上游」**，上移仅保留个别零星点（如 slash 命令，待评估）。
+**总判断**：4 个真正干净的通用能力（终端、i18n 框架、输出文件预览、slash 命令）已上移。剩余提交里，绝大多数是 ①pi-web 上游已有平行实现（应 pi-app 收敛）、②pi-app 产品化专属（留 pi-app）、③深度纠缠（高成本低确定性）。**后续重心应从「逐个上移」转为「pi-app 合并 pi-web 时收敛到上游」**。
+
+> **slash 命令上移记录（PR #4）**：起初担心依赖 pi-app 的 `rpc-manager`/`agent-resource-loader`，但发现 pi-web 已有 `/api/skills?cwd=`(`DefaultResourceLoader`) 可直接提供 skill 列表，故只复用现成 API、不碰后端 agent route，冲突面最小。pi-app 的扩展/提示模板两类来源属产品化专属，未上移（`SlashCommandEntry` 接口保留扩展位）。又一次印证「上移前先核查 pi-web 现状」能找到更干净的路径。
 
 ## 1. 分类总览
 
