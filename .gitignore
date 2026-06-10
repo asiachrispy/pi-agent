@@ -1,0 +1,11 @@
+# 子项目各自是独立 git 仓库，不纳入本管理仓库
+/pi/
+/pi-web/
+/pi-app/
+/pi-fetch-tool/
+
+# 系统/编辑器
+.DS_Store
+*.log
+.idea/
+.vscode/
