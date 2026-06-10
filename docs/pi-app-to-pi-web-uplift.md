@@ -11,6 +11,15 @@
 | 对象 | 状态 | 产出 |
 |------|------|------|
 | **终端面板（P1）** | ✅ 已上移 | `asiachrispy/pi-web#1`（`feat/terminal-panel`），tsc/vitest(64)/eslint/build 全绿 |
+| **i18n 框架（P3→提前）** | ✅ 框架已上移 | `asiachrispy/pi-web#2`（`feat/i18n-framework`），tsc/vitest(12)/eslint/build 全绿 |
+
+### i18n 框架上移的范围与策略
+
+- **战略提前**：原列 P3，但由于 pi-app 通用改动几乎都已 i18n 化，只要框架不先就位，后续每个触及共有组件的上移都会与 i18n 纠缠，故提前。
+- **本次只上移「框架基建」**：`lib/i18n/*`（核心 + provider + 全量 messages）、根 layout 接入、locale 自动检测（无手动切换 UI，与 pi-app 一致），并 i18n 化 `TabBar` 作冒烟验证。
+- **messages 整体搬全集**：pi-web 含少量 pi-app 独有 key（死数据），换取 pi-app 合并时 messages 零冲突收敛、共享层持有统一字典。
+- **组件 i18n 化走增量**：其余 ~11 个共有组件暂保持英文硬编码，随各自功能上移时再 i18n 化，避免一次性深改所有共有文件、拉满与 `agegr` 上游的冲突面。
+- **两个 PR 相互独立**：#1 与 #2 各自引入 vitest，可任意顺序合并；package.json 若冲突用 `git rerere` 解一次。
 
 ### 终端上移的关键发现与决策（修正了「28 文件全独有、整体搬运无冲突」的初判）
 
@@ -36,7 +45,7 @@
 | 分享会话（share links / shared view） | **上移 P2** | 通用，独有文件居多 |
 | 安全（file access、api auth 收紧） | **上移 P2** | 通用 Web 安全 |
 | skill workflow / slash 命令选择器 | **上移 P2** | 通用 |
-| **i18n 框架** | **上移 P3（战略）** | 见 §4，可从根上消除 pi-app 侧 i18n 冲突 |
+| **i18n 框架** | **✅ 框架已上移** | 见 §0；已提前，组件 i18n 化走增量（pi-web#2） |
 | workbench 产品化首页（M1–M4、白话 UI） | **需决策** | 技术上纯 Web，但属 pi-app 产品定位；见 §5 |
 | remote 访问 / Web Push | **多半留 pi-app** | 偏产品化/桌面；其中 branch-tree 等通用部分可拆出上移 |
 | scenes / onboarding / automation | **不处理（已废弃）** | 已被 `0fe8164 remove scenes/onboarding/automation` 移除 |
