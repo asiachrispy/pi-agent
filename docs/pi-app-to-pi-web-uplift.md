@@ -12,6 +12,14 @@
 |------|------|------|
 | **终端面板（P1）** | ✅ 已上移 | `asiachrispy/pi-web#1`（`feat/terminal-panel`），tsc/vitest(64)/eslint/build 全绿 |
 | **i18n 框架（P3→提前）** | ✅ 框架已上移 | `asiachrispy/pi-web#2`（`feat/i18n-framework`），tsc/vitest(12)/eslint/build 全绿 |
+| **输出文件预览（P1，f7186a9）** | ✅ 已上移 | `asiachrispy/pi-web#3`（`feat/output-file-preview`），tsc/vitest(7)/eslint/build 全绿 |
+
+### 输出文件预览上移的依赖修正（再次推翻「最独立」初判）
+
+- 原列「最独立 P1」，实际 `f7186a9`（6/5）依赖更早的附件提交 `f2f449f`（6/4）引入的 `lib/message-file-refs` 与 `components/FileAttachmentChip`。
+- 经依赖闭包分析后可干净拆出：`message-file-refs` 无任何 import（纯叶子）；`FileAttachmentChip` 仅依赖它 + react，**不碰 i18n/PDF/原生桥**；`assistant-output-files` 依赖 `file-paths`（pi-web 已有）+ `message-file-refs`。故基于 `main` 独立完成，无需 i18n。
+- 挂载点手动重做：把 `onOpenFile` + `cwd` 经 `AppShell → ChatWindow → MessageView → BlockView → TextBlock` 透传（pi-web 此前 `onOpenFile` 仅接 sidebar/explorer，本次补接聊天消息流）。
+- **教训固化**：上移前必须做相对路径 + `@/` 的完整依赖闭包分析，文档的「独有/低冲突」初判已两次被推翻（终端拖出 remote-auth、本次拖出附件基础设施）。
 
 ### i18n 框架上移的范围与策略
 
@@ -57,7 +65,7 @@
 
 - **P1（独立、纯通用、低风险，先做）**
   - 终端面板（§3）
-  - 文件查看/附件/预览：`f7186a9` 输出文件预览、`5a4c878` 预览图导出、`f2f449f` 文件附件预览、`4fac26d` FileViewer 行内工具栏
+  - 文件查看/附件/预览：~~`f7186a9` 输出文件预览（✅ 已上移 #3）~~、`5a4c878` 预览图导出、`f2f449f` 文件附件预览、`4fac26d` FileViewer 行内工具栏
 - **P2（通用但触及共有组件，需结构等价）**
   - 侧栏：`a462b1d` 自动打开最近会话、`4d147d4` 过滤 tmpdir 会话
   - 会话：`7188a42` 保留首条消息、`2245e54` 会话恢复/历史、`100c240` per-session 模型
