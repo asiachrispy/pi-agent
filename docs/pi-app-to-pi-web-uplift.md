@@ -6,6 +6,22 @@
 
 ---
 
+## 0. 执行进度
+
+| 对象 | 状态 | 产出 |
+|------|------|------|
+| **终端面板（P1）** | ✅ 已上移 | `asiachrispy/pi-web#1`（`feat/terminal-panel`），tsc/vitest(64)/eslint/build 全绿 |
+
+### 终端上移的关键发现与决策（修正了「28 文件全独有、整体搬运无冲突」的初判）
+
+1. **依赖闭包比预估大**：之前只统计 `@/` import，遗漏了相对路径 import。终端经 2 行薄封装 `lib/api-auth.ts` 耦合了 pi-app 的**远程访问/中继配对子系统** `lib/remote-auth`（再拖出 `pi-relay/*`、`remote-audit-log`、`remote-auth-store` 等一整套）。
+2. **解耦而非整体搬运**：`remote-auth` 是桌面层独有产品化能力，**不进通用 Web 层**。pi-web 改为提供**本地版 `api-auth`**（仅放行同源 loopback，跨源拒绝），不依赖 `remote-auth`。终端 4 个 route 测试本就 `vi.mock("@/lib/api-auth")`，故简化实现不影响测试。
+3. **`api-auth.ts` 成为有意的永久 fork 差异**：pi-web = 本地基线，pi-app = 远程增强。pi-app 合并 pi-web 时该单文件冲突保留 pi-app 版即可（建议 `git rerere` 记录一次）。
+4. **pi-web 此前无测试设施**：本次一并引入 `vitest` + `@testing-library/react` + `jsdom`（pi-web 从此具备测试能力）。
+5. **实际挂载点只有 `AppShell`**（顶栏 toggle + 中间列底部 drawer），并不涉及 `ChatInput`/`ChatWindow`，`OpenTerminalButton` 组件在 pi-app `main` 实际未使用。
+
+---
+
 ## 1. 分类总览
 
 | 类别 | 处置 | 说明 |
@@ -13,7 +29,7 @@
 | macOS 壳 / 原生桥 / `piNative` / 电源管理 | **留 pi-app** | 桌面专属，pi-web 无意义 |
 | 品牌（Pi-Agent 命名、logo、pi-app 重命名） | **留 pi-app** | pi-app 产品身份 |
 | CI / 发布 / lockfile / 版本号（大量 `0.7.x`、`fix(ci)`） | **留 pi-app** | pi-app 的发布流水线 |
-| **终端面板** | **上移 P1** | 28 文件全独有，纯通用 Web，自带测试 |
+| **终端面板** | **✅ 已上移** | 见 §0；经 api-auth 解耦远程鉴权后上移（pi-web#1） |
 | 文件查看 / 附件 / 预览（FileViewer、附件、输出预览） | **上移 P1** | 通用 Web，多为独有文件 + 少量共有挂载点 |
 | 侧栏 / 项目选择器（auto-open、过滤 tmpdir） | **上移 P2** | 通用，但改共有 `SessionSidebar` |
 | 会话恢复 / 历史 / per-session 模型 | **上移 P2** | 通用 |
