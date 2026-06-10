@@ -42,6 +42,43 @@
 
 ---
 
+## 0.5 重大修正：FileViewer 预览组「不上移，应收敛到上游」
+
+评估 `f2f449f` / `5a4c878` / `4fac26d` 时发现：**pi-web 上游(agegr) 与 pi-app 各自平行实现了 FileViewer 预览**，并非「pi-app 独有待上移」。
+
+| 能力 | pi-web 上游(持续维护) | pi-app fork |
+|------|----------------------|-------------|
+| 图片/音频预览 | ✅ ImageViewer/AudioViewer | ✅ 另一套 |
+| PDF | ✅ iframe + `/api/files?type=read` | ✅ PdfCanvasViewer(pdfjs canvas) |
+| docx/markdown | ✅ DocumentViewer/TextFileViewer | ✅ file-preview kind 系统 |
+| live sync(watching) | ✅ **pi-web 独有** | ❌ |
+| 预览截图导出 PNG | ❌ | ✅ preview-image-export |
+| office 系统打开 | ❌ | ✅(piNative，桌面专属) |
+
+**结论**：把 pi-app 版盖到 pi-web = 丢掉 agegr 上游实现(含 live sync) + 巨大永久冲突 + 加剧双份维护，与上移初衷相反。
+
+**正确处置**：
+- FileViewer 预览主体(图片/音频/PDF/docx/markdown) → **pi-app 收敛到上游**，合并 pi-web 时弃用自己的 `PdfCanvasViewer`/`FilePreviewHeader`/`file-preview` 平行实现。**不上移。**
+- `preview-image-export`(预览截图导出) → pi-web 真缺的通用能力，**可单独上移**，但需重挂到 pi-web 的 FileViewer 架构、剥离 piNative。优先级低。
+- office 系统打开(piNative) → 桌面专属，**留 pi-app**。
+
+> **方法论教训（已三次踩坑）**：上移前除了做依赖闭包分析，还必须确认 **pi-web 上游是否已有平行实现**。pi-web(agegr) 在 pi-app fork 后持续演进，很多「pi-app 能力」其实上游已有。后续每个候选都要先做「pi-web 现状核查」。
+
+## 0.6 P2 候选核查结论：简单上移阶段已结束
+
+对 P2 清单逐个做「pi-web 现状核查」后，结论是**剩余候选已无「干净独立」的通用上移**：
+
+| 候选 | pi-web 现状 | 处置 |
+|------|------------|------|
+| 侧栏自动打开/过滤 tmpdir (`a462b1d`/`4d147d4`) | pi-web SessionSidebar **已有**「最近活跃 cwd」逻辑 | 多半平行重复 → 收敛 |
+| 用量报告移顶栏 (`5c3615a`) | pi-web AppShell **已有** sessionStats/contextUsage | 平行 → 收敛 |
+| 会话恢复/历史 (`2245e54`) | 依赖 pi-app `product-sessions` API | 产品化专属 → 留 pi-app |
+| per-session 模型 (`100c240`) | 深改 `AccountsSettings`/`WorkbenchSettings`(pi-app 独有)+共有 | 高成本/纠缠 |
+| session-projects (`a462b1d` 等) | pi-web 无，但属 workbench 产品化模型 | 留 pi-app |
+| skill workflow + slash (`0d326d3`) | pi-web **真缺 slash 命令**，但依赖 pi-app `rpc-manager`/`agent-resource-loader` | 待评估（唯一候选） |
+
+**总判断**：3 个真正干净的通用能力（终端、i18n 框架、输出文件预览）已上移合并。剩余 146 提交里，绝大多数是 ①pi-web 上游已有平行实现（应 pi-app 收敛）、②pi-app 产品化专属（留 pi-app）、③深度纠缠（高成本低确定性）。**后续重心应从「逐个上移」转为「pi-app 合并 pi-web 时收敛到上游」**，上移仅保留个别零星点（如 slash 命令，待评估）。
+
 ## 1. 分类总览
 
 | 类别 | 处置 | 说明 |
