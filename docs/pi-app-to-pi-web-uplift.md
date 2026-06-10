@@ -8,6 +8,9 @@
 
 ## 0. 执行进度
 
+> **#1 / #2 / #3 已全部合并入 `asiachrispy/pi-web` 的 `main`**（merge commit `b1af076`，合并后 tsc / vitest(83) / eslint / build 全绿）。`main` 现已累积：vitest 测试框架、i18n 框架、终端面板、文件附件基础设施（`message-file-refs` / `FileAttachmentChip`）。后续上移**基于这个新 main**，不再各自重复引入 vitest，碰 i18n 的可直接用 `t()`。
+
+
 | 对象 | 状态 | 产出 |
 |------|------|------|
 | **终端面板（P1）** | ✅ 已上移 | `asiachrispy/pi-web#1`（`feat/terminal-panel`），tsc/vitest(64)/eslint/build 全绿 |
