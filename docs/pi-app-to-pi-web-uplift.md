@@ -1,0 +1,88 @@
+# pi-app → pi-web 通用能力「上移」评估
+
+**目的**：分层模型（`agegr/pi-web` → `asiachrispy/pi-web` → `asiachrispy/pi-app`）下，**通用 Web 能力应沉淀在 pi-web 层**。pi-app 历史上积累了 149 个提交，其中不少其实是通用 Web 能力，被放在了 pi-app。本文评估哪些适合上移到 `asiachrispy/pi-web`，以减少 pi-app 对共有文件的偏离、消除双份维护。
+
+**方法**：基于 149 个提交（140 非 merge + 9 merge）的分类。精确归属仍需逐提交看 diff；本文给出类别、优先级与执行建议。
+
+---
+
+## 1. 分类总览
+
+| 类别 | 处置 | 说明 |
+|------|------|------|
+| macOS 壳 / 原生桥 / `piNative` / 电源管理 | **留 pi-app** | 桌面专属，pi-web 无意义 |
+| 品牌（Pi-Agent 命名、logo、pi-app 重命名） | **留 pi-app** | pi-app 产品身份 |
+| CI / 发布 / lockfile / 版本号（大量 `0.7.x`、`fix(ci)`） | **留 pi-app** | pi-app 的发布流水线 |
+| **终端面板** | **上移 P1** | 28 文件全独有，纯通用 Web，自带测试 |
+| 文件查看 / 附件 / 预览（FileViewer、附件、输出预览） | **上移 P1** | 通用 Web，多为独有文件 + 少量共有挂载点 |
+| 侧栏 / 项目选择器（auto-open、过滤 tmpdir） | **上移 P2** | 通用，但改共有 `SessionSidebar` |
+| 会话恢复 / 历史 / per-session 模型 | **上移 P2** | 通用 |
+| 分享会话（share links / shared view） | **上移 P2** | 通用，独有文件居多 |
+| 安全（file access、api auth 收紧） | **上移 P2** | 通用 Web 安全 |
+| skill workflow / slash 命令选择器 | **上移 P2** | 通用 |
+| **i18n 框架** | **上移 P3（战略）** | 见 §4，可从根上消除 pi-app 侧 i18n 冲突 |
+| workbench 产品化首页（M1–M4、白话 UI） | **需决策** | 技术上纯 Web，但属 pi-app 产品定位；见 §5 |
+| remote 访问 / Web Push | **多半留 pi-app** | 偏产品化/桌面；其中 branch-tree 等通用部分可拆出上移 |
+| scenes / onboarding / automation | **不处理（已废弃）** | 已被 `0fe8164 remove scenes/onboarding/automation` 移除 |
+| 文档 / plans / specs | 随对应功能走 | superpowers/plans 等 |
+
+---
+
+## 2. 上移优先级清单
+
+- **P1（独立、纯通用、低风险，先做）**
+  - 终端面板（§3）
+  - 文件查看/附件/预览：`f7186a9` 输出文件预览、`5a4c878` 预览图导出、`f2f449f` 文件附件预览、`4fac26d` FileViewer 行内工具栏
+- **P2（通用但触及共有组件，需结构等价）**
+  - 侧栏：`a462b1d` 自动打开最近会话、`4d147d4` 过滤 tmpdir 会话
+  - 会话：`7188a42` 保留首条消息、`2245e54` 会话恢复/历史、`100c240` per-session 模型
+  - 分享：`9d70c16` 安全分享、`11b5404`（拆出 share 部分）
+  - 安全：`c77d7b9` file access + api auth
+  - skill：`0d326d3` skill workflow + slash 选择器
+  - usage：`5c3615a` 用量报告移到顶栏
+- **P3（基础设施，影响面大）**
+  - i18n 框架：`3f77a7d` / `9c6e8e3` / `773d2ed`（见 §4）
+
+---
+
+## 3. 首推上移对象：终端面板
+
+**为什么先做它**：
+- **28 个文件全部是 pi-app 独有新文件**（`app/api/terminal/**`、`components/Terminal*`、`components/OpenTerminalButton*`、`hooks/useTerminal*`、`lib/terminal/**`）——pi-web 上游全无，整体搬运不产生冲突。
+- **自带完整 TDD 测试**（每个模块都有 `.test`），上移后 pi-web 侧即有回归保护。
+- **共有挂载点已最小化**：仅 `AppShell` / `ChatInput` / `ChatWindow` 接线；其中 `AppShell` 的终端开合状态已抽成 `hooks/useTerminalPanel`（见 pi-app#7），挂载更干净。
+
+**执行建议**：
+1. 在 `pi-web` 新建分支，把 28 个独有文件按 TDD 顺序 `git cherry-pick`（或直接拷贝）过来——因都是新增文件，cherry-pick 基本无冲突。
+2. 在 pi-web 的 `AppShell` / `ChatInput` / `ChatWindow` **手动加挂载点**（接 `OpenTerminalButton` + 终端 drawer + `useTerminalPanel`）——pi-web 这些文件没有 pi-app 的其它改动，手动接线最干净、最贴近上游结构。
+3. `npm run lint && npx tsc --noEmit && npx vitest run` 全绿后 push 到 `asiachrispy/pi-web`。
+4. 下次 pi-app 合并 pi-web，终端能力变为「来自共享层」；pi-app 侧同名文件与上游内容收敛，后续不再双份维护。
+
+---
+
+## 4. i18n：分层 + 可写 pi-web 改变了结论
+
+之前结论是「i18n 冲突无法根治（上游只读）」。**在分层模型 + 我们可写 `pi-web` 的前提下，这一点可以改善**：
+
+- 若把 **i18n 框架上移到 `asiachrispy/pi-web`** 并让 pi-web 层自身 i18n 化，则 `pi-app` 合并 `pi-web` 时**不再有 i18n 冲突**（两者共享同一 i18n 化的共有组件）。
+- 残留的 i18n 冲突只剩**单一接缝**：`asiachrispy/pi-web` ←合并← `agegr/pi-web`（上游硬编码 vs 我们的 `t(key)`）。从「pi-web + pi-app 两层都冲突」降为「仅 pi-web 一层冲突」，再配合结构等价 + rerere + 半自动映射，成本大幅下降。
+
+> 代价：`asiachrispy/pi-web` 会比 `agegr/pi-web` 多出 i18n 差异（这是我们 fork 的既定选择）。属 P3、影响面大，建议在 P1/P2 跑顺、合并流程稳定后再做。
+
+---
+
+## 5. 待决策：workbench 产品化首页算谁的？
+
+`044f14f` / `da9cf6a` / `1e66367` / `11b5404` / `0fe8164` 等 workbench（M1–M4）提交，技术上是纯 Web，但承载 pi-app「面向非技术用户的白话产品化」定位。两种取向：
+
+- **留 pi-app**：把 workbench 视为 pi-app 的产品外观，pi-web 保持「开发者向纯 Web」。边界清晰，但 workbench 仍是 pi-app 对共有组件的较大偏离来源。
+- **上移 pi-web**：pi-web 也具备 workbench；pi-app 只在其上加 macOS 壳。重复最少，但模糊了「pi-web=通用 / pi-app=产品化」的产品分界。
+
+建议：**先留 pi-app**，待 P1/P2 上移完成、共有组件偏离显著下降后再评估是否值得上移。
+
+---
+
+## 6. 不需要处理
+
+- **已废弃**：scenes / onboarding / automation（`2053949` / `25bbc77` / `5b6cd64` / `7293bd6` / `57db0d4` 等）已被 `0fe8164` 移除，净效果为「不存在」，无需上移。
+- **CI / 发布 / 版本 / 品牌 / macOS**：pi-app 专属，永久留在 pi-app。
