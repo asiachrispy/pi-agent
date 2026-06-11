@@ -115,7 +115,14 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 - [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) — pi-web fork 合并维护手册：merge 策略、标准流程、冲突解决原则、省力工具（rerere / .gitattributes）、分层链路下的自上而下合并顺序。
 - [`docs/pi-app-to-pi-web-uplift.md`](docs/pi-app-to-pi-web-uplift.md) — pi-app 149 提交的「通用能力上移」评估：分类总表、上移优先级（P1 终端面板首推）、i18n 在分层下可消除 pi-app 侧冲突、workbench 归属待决策。
 - **共有组件去耦（第一步）** — [asiachrispy/pi-app#7](https://github.com/asiachrispy/pi-app/pull/7)：把 ChatInput 工具档位映射、AppShell 终端面板状态抽到独立可测模块（`lib/chat-input-tool-presets`、`hooks/useTerminalPanel`），行为不变、253 测试通过。后续按 §5 继续把专属逻辑移出共有组件。
-- **采用社区扩展替代自研（web_fetch）** — 装 `pi install npm:pi-web-access`（自研 `web_fetch` 的超集：搜索/抓取/PDF/YouTube/GitHub 克隆，零配置），pi CLI 与 pi-app 共享 agent dir 自动加载。配套：
-  - [asiachrispy/pi-app#8](https://github.com/asiachrispy/pi-app/pull/8) — 下线 pi-app 的 web-fetch 胶水（`WebFetchSettings`/3 路由/`piNative.webFetch` 类型/i18n），净删 674 行，未动 macOS Swift。
-  - [asiachrispy/pi-fetch-tool#1](https://github.com/asiachrispy/pi-fetch-tool/pull/1) — 标记 `pi-fetch-tool` 废弃，指向 `pi-web-access`。
-  - [asiachrispy/pi-app#9](https://github.com/asiachrispy/pi-app/pull/9) — 移除 macOS Swift 端 webFetch 死代码（`HiddenWebFetcher` + `PiNativeBridge.webFetch` + 测试 + 空测试目标），`swift build` 通过，净删 402 行；核心原生能力未动。
+- **采用社区扩展替代自研（web_fetch）** — 执行 `pi install npm:pi-web-access` 后，pi CLI 与 pi-app 会从共享 agent dir 自动加载。它是自研 `web_fetch` 的超集，支持搜索、抓取、PDF、YouTube、GitHub 克隆等能力。
+  - 已合并 [asiachrispy/pi-app#8](https://github.com/asiachrispy/pi-app/pull/8)：下线 pi-app 的 web-fetch 胶水（`WebFetchSettings`/3 路由/`piNative.webFetch` 类型/i18n），净删 674 行，未动 macOS Swift。
+  - 已合并 [asiachrispy/pi-fetch-tool#1](https://github.com/asiachrispy/pi-fetch-tool/pull/1)：标记 `pi-fetch-tool` 废弃，指向 `pi-web-access`。
+  - 已合并 [asiachrispy/pi-app#9](https://github.com/asiachrispy/pi-app/pull/9)：移除 macOS Swift 端 webFetch 死代码（`HiddenWebFetcher`、`PiNativeBridge.webFetch`、空测试目标），净删 402 行；保留核心原生能力，并补 `PiNativeBridgeTests` 覆盖既有 piNative 注入与 `webFetch` 移除。
+  - 剩余 npm registry 废弃标记需发布权限和 OTP：
+
+    ```bash
+    npm deprecate pi-fetch-tool "use pi install npm:pi-web-access" --otp=123456
+    ```
+
+    如需在 CI 执行，可创建勾选 **Bypass 2FA** 的 Granular Access Token（Read and write，范围限 `pi-fetch-tool`），再追加 `--//registry.npmjs.org/:_authToken=$NPM_TOKEN`。
