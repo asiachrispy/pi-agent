@@ -16,7 +16,7 @@
 | `pi` | 引擎 / CLI | `asiachrispy/pi` | `earendil-works/pi` |
 | `pi-web` | 纯浏览器 Web fork | `asiachrispy/pi-web` | `agegr/pi-web` |
 | `pi-app` | macOS 桌面 fork（主线） | `asiachrispy/pi-app` | `asiachrispy/pi-web`（分层·见下） |
-| `pi-fetch-tool` | pi 扩展（`web_fetch` 工具） | `asiachrispy/pi-fetch-tool` | —（独立扩展包） |
+| `pi-fetch-tool` | pi 扩展（`web_fetch`）·**已废弃** | `asiachrispy/pi-fetch-tool` | —（改用社区 `pi-web-access`） |
 
 > ⚠️ **关键约束**：源头 `agegr/pi-web` 与 `earendil-works/pi` 我们**无写权限**（只读 `upstream`）。但我们对每条线都有**可写的 fork**（`asiachrispy/*`），二次开发都落在 fork 上。对共有文件的改动（如 i18n）是**无法回馈源头的永久 fork 差异**，治理目标是让它「易于持续合并」而非「消除」。
 >
@@ -87,7 +87,8 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 前提：源头（`agegr/pi-web`、`earendil-works/pi`）**只读不可改**，对共有文件的改动无法回馈、只能留在我们的 fork 里。因此二次开发改到哪里、怎么改，直接决定未来每次 merge 上游的冲突大小。目标是让永久 fork 差异**易于持续合并**。
 
 1. **改动归属**
-   - 引擎能力 → 优先做成**扩展包**（参考 `pi-fetch-tool`），尽量不改 `pi` 引擎源码；必须改则集中、可 rebase（载体：`asiachrispy/pi`）。
+   - 引擎能力 → **先查 [pi.dev/packages](https://pi.dev/packages) 有无现成社区扩展**（`pi install npm:<pkg>` 写入 `~/.pi/agent/settings.json`，pi CLI 与 pi-app 共享加载，零应用改动）；无现成再自建扩展包，尽量不改 `pi` 引擎源码。
+     - ⚠️ **避免重复造轮子**：`web_fetch` 自研（`pi-fetch-tool`）已被社区 `pi-web-access` 取代（其超集）；`memory` 由运行时 auto-install。详见下方 §7。注意区分**agent 层**（可被扩展替换）与 **pi-app 前端/原生层**（i18n UI、聊天内 markdown 渲染、文件预览、终端——扩展替代不了，保留自研）。
    - **通用 Web 能力**（跨平台、非 macOS）→ 进 `asiachrispy/pi-web`；pi-app 通过合并 pi-web 自动获得（分层链路）。
    - **macOS / 桌面 / 原生 / 产品化能力** → 进 `asiachrispy/pi-app`，尽量放在**新增独有文件**里，不碰共有文件。
    - 无论改哪条 fork 的共有文件，都力求**结构等价**（只替换字符串 / 最小插入，不重排 JSX），以便 git 三方合并能自动吃掉上游对同一文件其他部分的改动。
@@ -114,3 +115,7 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 - [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) — pi-web fork 合并维护手册：merge 策略、标准流程、冲突解决原则、省力工具（rerere / .gitattributes）、分层链路下的自上而下合并顺序。
 - [`docs/pi-app-to-pi-web-uplift.md`](docs/pi-app-to-pi-web-uplift.md) — pi-app 149 提交的「通用能力上移」评估：分类总表、上移优先级（P1 终端面板首推）、i18n 在分层下可消除 pi-app 侧冲突、workbench 归属待决策。
 - **共有组件去耦（第一步）** — [asiachrispy/pi-app#7](https://github.com/asiachrispy/pi-app/pull/7)：把 ChatInput 工具档位映射、AppShell 终端面板状态抽到独立可测模块（`lib/chat-input-tool-presets`、`hooks/useTerminalPanel`），行为不变、253 测试通过。后续按 §5 继续把专属逻辑移出共有组件。
+- **采用社区扩展替代自研（web_fetch）** — 装 `pi install npm:pi-web-access`（自研 `web_fetch` 的超集：搜索/抓取/PDF/YouTube/GitHub 克隆，零配置），pi CLI 与 pi-app 共享 agent dir 自动加载。配套：
+  - [asiachrispy/pi-app#8](https://github.com/asiachrispy/pi-app/pull/8) — 下线 pi-app 的 web-fetch 胶水（`WebFetchSettings`/3 路由/`piNative.webFetch` 类型/i18n），净删 674 行，未动 macOS Swift。
+  - [asiachrispy/pi-fetch-tool#1](https://github.com/asiachrispy/pi-fetch-tool/pull/1) — 标记 `pi-fetch-tool` 废弃，指向 `pi-web-access`。
+  - 遗留：macOS Swift 端 `HiddenWebFetcher`/`PiNativeBridge.webFetch` 现为休眠死代码（无 TS 引用），按需单独清理。
