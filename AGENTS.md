@@ -18,3 +18,12 @@ cd ~/.pi/agent/sessions && \
 ```
 
 执行前先 `ls -d ./*/` 核对，确认仅删除 `--var-folders-*`，保留 `--Users-*`。
+
+## 更新日志维护（强制）
+
+本工作区在根目录维护 [`CHANGELOG.md`](./CHANGELOG.md)，遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范。
+
+- **每次合并到 `main` 后，必须更新 `CHANGELOG.md`**：把本次合并的变更整理/补充进去，不得遗漏。
+- 开发期间把新条目写到 `## [Unreleased]` 段下，按 `Added` / `Changed` / `Fixed` / `Removed` 分类（无内容的分类可省略）。
+- 发布或打 tag 时，将 `## [Unreleased]` 重命名为对应版本号与日期（`## [x.y.z] - YYYY-MM-DD`），并在顶部新建一个空的 `## [Unreleased]`。
+- 条目用简洁中文描述「做了什么、为什么」，必要时标注涉及的子仓（`pi` / `pi-app` / `pi-web`）以及关键文件或文档链接。
