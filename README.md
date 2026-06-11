@@ -118,4 +118,4 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 - **采用社区扩展替代自研（web_fetch）** — 装 `pi install npm:pi-web-access`（自研 `web_fetch` 的超集：搜索/抓取/PDF/YouTube/GitHub 克隆，零配置），pi CLI 与 pi-app 共享 agent dir 自动加载。配套：
   - [asiachrispy/pi-app#8](https://github.com/asiachrispy/pi-app/pull/8) — 下线 pi-app 的 web-fetch 胶水（`WebFetchSettings`/3 路由/`piNative.webFetch` 类型/i18n），净删 674 行，未动 macOS Swift。
   - [asiachrispy/pi-fetch-tool#1](https://github.com/asiachrispy/pi-fetch-tool/pull/1) — 标记 `pi-fetch-tool` 废弃，指向 `pi-web-access`。
-  - 遗留：macOS Swift 端 `HiddenWebFetcher`/`PiNativeBridge.webFetch` 现为休眠死代码（无 TS 引用），按需单独清理。
+  - [asiachrispy/pi-app#9](https://github.com/asiachrispy/pi-app/pull/9) — 移除 macOS Swift 端 webFetch 死代码（`HiddenWebFetcher` + `PiNativeBridge.webFetch` + 测试 + 空测试目标），`swift build` 通过，净删 402 行；核心原生能力未动。
