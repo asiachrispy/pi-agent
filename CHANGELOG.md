@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-06-12
+
+### Fixed
+- **DMG 下载后显示「已损坏」**：打包原先只单独 ad-hoc 签名主程序与内嵌 `node`，bundle 内嵌套原生二进制（`*.node` 插件、sharp 的 libvips `*.dylib` 等）未签名；DMG 从 GitHub 下载被加 quarantine 后，Apple Silicon 即判定「已损坏，应移到废纸篓」。修复：改为对整个 `.app` 做 ad-hoc **深度签名**（`codesign --force --deep`），并在打包时 `--verify --deep --strict` 校验；DMG `hdiutil verify` 通过、挂载后内部 app 签名有效。仍未做 Apple 公证，下载版首次打开需右键「打开」或 `xattr -dr com.apple.quarantine`。涉及：`pi-app/scripts/package-macos-app.sh`。
+
 ### Added
 - **固化打包/发布约定**：在 `AGENTS.md` 增加「打包与发布方式（约定）」一节，明确自 v0.8.2 起 macOS 打包统一走 Next standalone 输出，并给出版本号→提交→打包→DMG→tag→`gh release` 的标准步骤与体积基线（Pi.app ≈ 224M、DMG ≈ 93M）。涉及：`AGENTS.md`、`CHANGELOG.md`。
 
