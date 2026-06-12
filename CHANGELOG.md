@@ -11,6 +11,13 @@
 ### Added
 - **新增强制规则：打包 / 安装 / 发布前必须同步上游** — 在 `AGENTS.md` 增加「打包 / 安装 / 发布前的上游同步（强制）」一节：每次 `package:macos`、本地安装、或发布 GitHub Release 之前，必须按分层顺序（先 `pi-web` 后 `pi-app`，`pi` 独立）执行 `git fetch upstream && git merge upstream/main` 并推送，合并后经 `tsc --noEmit` + `vitest run`（pi-app 含 `swift build/test`）验证通过再构建/发布；落后 0 时确认最新即可，不空合并。涉及：`AGENTS.md`、`CHANGELOG.md`。
 
+### Changed
+- **本地安装前上游同步**：按强制规则在打包/安装前同步三仓——`pi` 落后 1，合并 `upstream/main` 并推送（`c5ae6fba`）；`pi-web` 落后 0，确认最新；`pi-app` 落后 2（上游「删 Export」`226e1b4`、「文件预览修复」`9969aca`，pi-app 已有等价成熟实现），合并产生 4 个共享/组件文件冲突（`app/api/files/[...path]/route.ts`、`components/AppShell.tsx`、`components/FileViewer.tsx`、`lib/session-reader.ts`），按归属原则全部保留 pi-app 成熟版本（ours）后提交并推送（`92fd100`）。合并后经 `tsc --noEmit` + `vitest run`(248) + `swift build -c release` 验证全绿，再重新打包安装到 `/Applications`。
+- **macOS 安装包瘦身**：打包脚本新增 `slim_bundle` 步骤，删除 bundle 内全量 `*.d.ts`/`*.map`/`*.md`/`docs`/`examples`/`__tests__`/`.github` 以及 `agent-browser` 非本机平台二进制。Pi.app 从 ~1.2G 降到 ~905M（bundle node_modules 933M→761M）。可用 `SKIP_SLIM=1` 关闭。涉及：`pi-app/scripts/package-macos-app.sh`。
+
+### Fixed
+- **瘦身后 Pi.app 启动服务失败**：之前瘦身误删了本机 `@next/swc-darwin-arm64`（116M）。`next.config.ts` 是 TypeScript 配置，`next start` 启动时 Next 16 需用本机 SWC 编译它；缺失后回退到 wasm，且编译产物抛 `__dirname is not defined`，导致 config 加载失败、服务起不来。修复：`slim_bundle` 改为始终保留本机平台 SWC（仅清理其它平台 swc 包），重新打包后用 bundle 内嵌 Node 冒烟验证 `next start` 的 `/api/health` 返回 200，GUI 启动后 30141 端口同样 200。涉及：`pi-app/scripts/package-macos-app.sh`。
+
 ## [0.8.1] - 2026-06-12
 
 ### Added
