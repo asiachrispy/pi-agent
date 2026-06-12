@@ -2,6 +2,31 @@
 
 > 本文件是本工作区（pi-agent）自有的 agent 工作规范，不属于任何上游仓库（`pi` / `pi-web` / `pi-app`），仅约束在本工作区内的协作行为。
 
+## 打包 / 安装 / 发布前的上游同步（强制）
+
+**每次打包（`package:macos`）、安装到本地、或发布版本（GitHub Release）之前，必须先拉取并合并上游，确保基于最新代码再构建。** 不得在落后上游的状态下打包或发布。
+
+适用范围与顺序（按分层链路，先 `pi-web` 后 `pi-app`，`pi` 独立）：
+
+```bash
+# 1) pi 引擎（upstream = earendil-works/pi）
+cd pi      && git fetch upstream && git merge upstream/main && git push origin main
+
+# 2) pi-web 共享 Web 层（upstream = agegr/pi-web）
+cd pi-web  && git fetch upstream && git merge upstream/main && git push origin main
+
+# 3) pi-app 桌面主线（upstream = asiachrispy/pi-web，必须在 pi-web 推送之后）
+cd pi-app  && git fetch upstream && git merge upstream/main && git push origin main
+```
+
+执行要点：
+
+- 合并前若工作区有未提交改动，先提交或暂存，不在脏树上合并。
+- 合并若有冲突，按 README §5 的归属原则解决（共有/组件文件一般保留 `pi-app` 成熟版本）。
+- **合并后必须先验证再打包**：`tsc --noEmit` + `vitest run`（pi-app 还需 `swift build`/`swift test`）全绿后，才执行 `npm run package:macos`。
+- 各 fork 合并结果推送到 `origin/main` 后再打 tag / 发布；发布版本号与 tag 基于已同步上游的提交。
+- 若上游本次无更新（落后 0），记录“已确认最新”即可，无需空合并。
+
 ## 测试数据清理（强制）
 
 在本工作区运行测试（如 `pi` 各 package 的单测、RPC/会话相关用例）后，**必须清理测试过程产生的临时会话数据**，不得遗留、不得展示给用户。
