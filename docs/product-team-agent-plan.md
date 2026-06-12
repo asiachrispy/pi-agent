@@ -202,31 +202,92 @@ release-auditor 上线检查
 推荐结构：
 
 ```text
-~/.pi/agent/
-├── extensions/
-│   └── subagent/
-│       ├── index.ts
-│       └── agents.ts
-├── agents/
-│   ├── fullstack-dev.md
-│   ├── qa-acceptance.md
-│   └── release-auditor.md
-└── prompts/
-    ├── dev.md
-    ├── mk-qa.md
-    └── mk-ship.md
+# mk-lab 专用 agents / prompts / extensions 全部放项目范围
+<mk-lab-root>/
+└── .pi/
+    ├── agents/
+    │   ├── fullstack-dev.md
+    │   ├── qa-acceptance.md
+    │   └── release-auditor.md
+    ├── prompts/
+    │   ├── mk-dev.md
+    │   ├── mk-qa.md
+    │   └── mk-ship.md
+    └── extensions/
+        └── subagent/
+            ├── index.ts
+            └── agents.ts
 ```
 
-项目级覆盖：
+4 个业务仓库各自通过 `scripts/setup-pi-entrypoints.sh` 生成本地 symlink 入口：
 
 ```text
-my-project/
-└── .pi/
-    └── agents/
-        └── fullstack-dev.md
+<child-repo>/.pi/prompts/mk-dev.md    -> ../../../.pi/prompts/mk-dev.md
+<child-repo>/.pi/prompts/mk-qa.md     -> ../../../.pi/prompts/mk-qa.md
+<child-repo>/.pi/prompts/mk-ship.md   -> ../../../.pi/prompts/mk-ship.md
+<child-repo>/.pi/extensions/subagent  -> ../../../.pi/extensions/subagent
 ```
 
-项目级 agent 用于声明具体技术栈、目录结构、运行命令和业务规则。
+这样每位成员只需要本机安装 Pi 和个人模型配置；mk-lab 的 agents、prompts、subagent 扩展都随总仓库版本管理。
+
+### 7.1.1 mk-lab 项目仓库地图
+
+业务代码根目录：
+
+```text
+<mk-lab-root>/
+```
+
+当前接入 4 个项目：
+
+```text
+<mk-lab-root>/mk-web-business
+<mk-lab-root>/mk-web-logistics
+<mk-lab-root>/mk-web-supplier
+<mk-lab-root>/mkerp
+```
+
+项目说明：
+
+| 项目 | 类型 | 技术栈 | 推荐验证命令 |
+|---|---|---|---|
+| `mk-web-business` | 业务端前端 | Vue 3 / Vite / TypeScript / Element Plus / Pinia / Vitest | `pnpm test`, `pnpm lint`, `pnpm build` |
+| `mk-web-logistics` | 物流端前端 | Vue 3 / Vite / TypeScript / Element Plus / Pinia / Vitest | `pnpm test`, `pnpm lint`, `pnpm build` |
+| `mk-web-supplier` | 供应商端前端 | Vue 3 / Vite / TypeScript / Element Plus / Pinia / Vitest | `pnpm test`, `pnpm lint`, `pnpm build` |
+| `mkerp` | 后端 ERP | Java 8 / Spring Boot 2.3.2 / Maven 多模块 / MyBatis Plus | `mvn test`, `mvn -DskipTests package`, `mvn -pl <module> -am test/package` |
+
+项目选择规则：
+
+- 页面、菜单、表格、弹窗、前端交互：优先定位到对应 `mk-web-*` 仓库。
+- 接口、数据库、权限、订单、库存、物流、财务：优先检查 `mkerp`。
+- 前后端联动：同时检查后端接口和前端调用。
+- 用户未指定项目且无法推断时，智能体最多问 1 个关键问题。
+
+### 7.1.2 mk-erp-wiki 知识库使用策略
+
+`<mk-lab-root>/mk-erp-wiki/` 下的文档不建议全文复制进 prompt，应作为 agent 按需读取的项目知识库：
+
+| 文件 | 用途 | 读取时机 |
+|---|---|---|
+| `README.md` | wiki 入口索引、目录说明、命名规范 | 不清楚该读哪个文件时先读 |
+| `project-overview.md` | 项目总览、业务模块、前后端契约、重要文件、已知坑 | 任何 mk-lab 需求开始时优先读取或检索 |
+| `project-map.md` | 4 个仓库地图、模块地图、前后端对应关系、常用命令 | 判断需求属于哪个仓库时读取 |
+| `frontend-rules.md` | 前端技术栈、Vue/TS/Element Plus/useTable/ArtTable/i18n/权限规范 | 涉及 `mk-web-*` 前端开发或验收时读取 |
+| `backend-rules.md` | 后端技术栈、模块边界、Controller/SharedService/MyBatis/MQ/数据库规则 | 涉及 `mkerp` 后端开发或验收时读取 |
+| `data-analysis-rules.md` | BI/报表/指标口径/数仓分层/数据质量规范 | 涉及报表、看板、指标、数据分析时读取 |
+| `data-source-catalog.md` | 业务库表与 ODS/DWD/DWS/ADS 映射 | 涉及取数、报表数据源、数仓表选择时读取 |
+| `workflow-usage.md` | `/mk-dev`、`/mk-qa`、`/mk-ship` 使用说明 | 使用智能体流程前读取 |
+| `raw/database/mkerp.sql` | 业务库 DDL | 需要确认业务表字段、索引、类型、COMMENT 时按表名检索 |
+| `raw/database/dataware.sql` | 数仓 DDL | 需要确认 ODS/DWD/DWS/ADS 字段和指标来源时按表名检索 |
+| `ui-guidelines/` | UI / UX / 视觉 / 组件规范预留目录 | 后续涉及 UI 规范时读取 |
+| `prd/` | 产品 PRD 预留目录 | 后续涉及具体产品需求时读取 |
+
+优化原则：
+
+- `project-overview.md` 是总览，应让 `fullstack-dev` 默认优先读取。
+- `frontend-rules.md` 是前端规则，应进入前端任务触发条件，不必每次读取。
+- `data-analysis-rules.md` 和 `data-source-catalog.md` 是数据/报表专家知识，应只在 BI/指标/报表任务中读取。
+- `raw/database/mkerp.sql` 和 `raw/database/dataware.sql` 体量较大，只做 source of truth，通过表名检索读取，不进入默认上下文。
 
 ### 7.2 第二阶段：开发 product-team 扩展
 
@@ -239,7 +300,7 @@ my-project/
 提供命令：
 
 ```text
-/dev <需求>      # 默认开发流程
+/mk-dev <需求>   # 默认开发流程
 /mk-qa          # 手动触发复杂验收
 /mk-ship        # 上线前检查
 /status         # 查看当前任务状态
@@ -388,7 +449,7 @@ model: claude-haiku-4-5
 
 ## 9. 推荐 Prompt 模板
 
-### 9.1 `dev.md`
+### 9.1 `mk-dev.md`
 
 ```markdown
 ---
@@ -464,7 +525,7 @@ description: 上线前审计检查
 - `fullstack-dev.md`
 - `qa-acceptance.md`
 - `release-auditor.md`
-- `dev.md`
+- `mk-dev.md`
 - `mk-qa.md`
 - `mk-ship.md`
 
@@ -483,7 +544,7 @@ description: 上线前审计检查
 
 开发 `product-team` extension：
 
-- `/dev`
+- `/mk-dev`
 - `/mk-qa`
 - `/mk-ship`
 - `/status`
