@@ -27,6 +27,22 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 - 各 fork 合并结果推送到 `origin/main` 后再打 tag / 发布；发布版本号与 tag 基于已同步上游的提交。
 - 若上游本次无更新（落后 0），记录“已确认最新”即可，无需空合并。
 
+## 打包与发布方式（约定）
+
+**自 v0.8.2 起，macOS 打包统一走 Next standalone 输出，后续发布版本均按此方式。**
+
+- 打包入口仍是 `npm run package:macos`（`pi-app/scripts/package-macos-app.sh`），脚本内部已用 `PI_STANDALONE=1` 触发 `output: "standalone"`：构建期按依赖追踪，只把服务端真正需要的文件产出到 `.next/standalone`（自带 `server.js` + 精简 `node_modules`，自动不含 `@next/swc`）；前端重型库随客户端 chunk 进 `.next/static`，不再整包随 `node_modules` 发布。
+- bundle 布局：`server.js` + 追踪后的 `node_modules` + `.next/static` + `public` + 内嵌 Node；`bin/pi-app.js` 检测到 `server.js` 即以 `node server.js` 启动（普通 npm 安装无 `server.js` 时回退 `next start`）。
+- 体积基线：Pi.app ≈ 224M、DMG ≈ 93M（显著低于早期 `next start` 全量打包的 ~905M / 543MB）。如果某次打包体积明显回升，先排查 standalone 是否生效。
+- 发布步骤（在 pi/pi-web/pi-app **上游同步且验证全绿后**执行）：
+  1. `npm version patch --no-git-tag-version` 升版本，更新根 `CHANGELOG.md`（`[Unreleased]` 定版）。
+  2. 提交（`build(macos): ...` + `chore(release): vX.Y.Z`），`git push origin main`。
+  3. `npm run package:macos` 重新打包（确保 Info.plist 版本正确）。
+  4. 制作 DMG：staging 目录放 `Pi.app` + `/Applications` 软链，`hdiutil create -format UDZO` 生成 `Pi-X.Y.Z.dmg`。
+  5. 打 tag `vX.Y.Z` 并推送；`gh release create vX.Y.Z -R asiachrispy/pi-app` 上传 DMG。
+- 发布前务必冷烟验证：用 bundle 内嵌 Node 跑 `server.js`，确认 `/`、`/api/health`、`/api/sessions` 均 200。
+- npm 包内容不受 standalone 影响（`npx pi-app` 走 `next start` 回退分支）；如需同步发 npm，另行 `npm publish --access public`。
+
 ## 测试数据清理（强制）
 
 在本工作区运行测试（如 `pi` 各 package 的单测、RPC/会话相关用例）后，**必须清理测试过程产生的临时会话数据**，不得遗留、不得展示给用户。

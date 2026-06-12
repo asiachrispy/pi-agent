@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Added
+- **固化打包/发布约定**：在 `AGENTS.md` 增加「打包与发布方式（约定）」一节，明确自 v0.8.2 起 macOS 打包统一走 Next standalone 输出，并给出版本号→提交→打包→DMG→tag→`gh release` 的标准步骤与体积基线（Pi.app ≈ 224M、DMG ≈ 93M）。涉及：`AGENTS.md`、`CHANGELOG.md`。
+
 ## [0.8.2] - 2026-06-12
 
 ### Added
