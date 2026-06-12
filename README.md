@@ -103,7 +103,7 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 
 | 仓库 | 分支 | HEAD | 相对上游 |
 |------|------|------|----------|
-| `pi` | `main` | `dcf0bbc3` | 二次开发领先 `earendil-works/pi` 约 17 提交 |
+| `pi` | `main` | `1fcb9d3c` | 二次开发领先 `earendil-works/pi` 18 提交、落后 0（增量明细见 §8） |
 | `pi-web` | `main` | `cde99d7` | `origin=asiachrispy/pi-web`，当前 = 上游 `agegr/pi-web`（尚无我们的改动） |
 | `pi-app` | `main` | `e336917` | upstream=`asiachrispy/pi-web`；领先 149 提交，待合并上游 0 |
 
@@ -126,3 +126,24 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
     ```
 
     如需在 CI 执行，可创建勾选 **Bypass 2FA** 的 Granular Access Token（Read and write，范围限 `pi-fetch-tool`），再追加 `--//registry.npmjs.org/:_authToken=$NPM_TOKEN`。
+
+---
+
+## 8. 本地 `pi` 相对上游（`earendil-works/pi`）的增量
+
+当前 `pi` 领先上游 **18 提交、落后 0**（HEAD `1fcb9d3c`，`git diff --stat upstream/main..HEAD` 共 61 文件、约 +7400/−960 行）。这些是我们在引擎 fork 上自建的能力，按主题归纳如下。
+
+> 复核命令：`cd pi && git fetch upstream && git log --oneline upstream/main..HEAD`。
+
+| 主题 | 增量内容 | 关键文件 | 来源提交 |
+|------|----------|----------|----------|
+| **RPC 树导航 + pi-web 远程** | 让 pi-web 经 RPC 远程驱动 agent，支持会话树导航与工具命令 | `coding-agent/src/modes/rpc/*`、`core/agent-session-tree.ts`、`core/agent-session-queue.ts`、`docs/rpc.md`、`docs/pi-web-remote.md` | `05325f59` |
+| **memory 记忆扩展（类人遗忘）** | 记忆扩展示例 + 首次运行自动安装（修 jiti Node builtins）；曾独立成 `pi-memory` 包后精简为「example 扩展 + auto-install」 | `coding-agent/examples/extensions/memory.ts`(787 行)、`core/ensure-memory-extension.ts`、`docs/memory-design*.md`、`docs/memory-features.md` | `6aa70629`/`25368a21`/`0eb8ed44`/`8c6dad34`/`8c5d3720` |
+| **Agnes AI provider + 模型** | 新增 Agnes provider 与模型、显示名、环境变量密钥 | `ai/src/providers/*`、`ai/src/models.ts`、`core/provider-display-names.ts`、`ai/src/env-api-keys.ts` | `935ec8e7` |
+| **package-manager 重构 + 边界加固** | 拆分包管理为 git / npm / source-parser，新增包边界与大文件检查 | `core/package-manager-{git,npm}.ts`、`core/package-source-parser.ts`、`scripts/check-large-files.mjs`、`scripts/check-package-boundaries.mjs` | `632d8b23`/`110d50fd` |
+| **AI 重试分类 / 定价 / responses 增强** | 重试错误分类、service-tier 定价、openai-responses 共享逻辑 | `ai/src/utils/retry-classification.ts`、`ai/src/providers/openai-responses*.ts` | 含于上游合并修复批次 |
+| **system prompt 技能工作流增强** | 扩充 skill workflow 指引 | `agent/src/agent-loop.ts`、system prompt | `b3988f64` |
+| **dev-browser 技能 + skills-lock** | 新增 dev-browser 技能与技能锁定文件 | `.pi/skills/dev-browser/SKILL.md`、`skills-lock.json` | `8c5d3720` |
+| **版本与上游合并维护** | Release v0.78.2；合并上游 v0.79.1 后的类型/未用变量修复 | `CHANGELOG.md`、各包 | `a253843e`/`7965963e`/`7923991f`/`dcf0bbc3` |
+
+> 治理提示（呼应 §5）：这些增量是**引擎 fork 的永久差异**，每次 `merge upstream/main` 都要带着走。其中 `memory`、`web_fetch`（已迁社区 `pi-web-access`）等「引擎能力」应优先评估能否由社区扩展承接，减少需要长期维护的源码改动；RPC / package-manager 等深度引擎改造则属必须自维护的部分。
