@@ -230,39 +230,6 @@ release-auditor 上线检查
 
 这样每位成员只需要本机安装 Pi 和个人模型配置；mk-lab 的 agents、prompts、subagent 扩展都随总仓库版本管理。
 
-### 7.1.1 mk-lab 项目仓库地图
-
-业务代码根目录：
-
-```text
-<mk-lab-root>/
-```
-
-当前接入 4 个项目：
-
-```text
-<mk-lab-root>/mk-web-business
-<mk-lab-root>/mk-web-logistics
-<mk-lab-root>/mk-web-supplier
-<mk-lab-root>/mkerp
-```
-
-项目说明：
-
-| 项目 | 类型 | 技术栈 | 推荐验证命令 |
-|---|---|---|---|
-| `mk-web-business` | 业务端前端 | Vue 3 / Vite / TypeScript / Element Plus / Pinia / Vitest | `pnpm test`, `pnpm lint`, `pnpm build` |
-| `mk-web-logistics` | 物流端前端 | Vue 3 / Vite / TypeScript / Element Plus / Pinia / Vitest | `pnpm test`, `pnpm lint`, `pnpm build` |
-| `mk-web-supplier` | 供应商端前端 | Vue 3 / Vite / TypeScript / Element Plus / Pinia / Vitest | `pnpm test`, `pnpm lint`, `pnpm build` |
-| `mkerp` | 后端 ERP | Java 8 / Spring Boot 2.3.2 / Maven 多模块 / MyBatis Plus | `mvn test`, `mvn -DskipTests package`, `mvn -pl <module> -am test/package` |
-
-项目选择规则：
-
-- 页面、菜单、表格、弹窗、前端交互：优先定位到对应 `mk-web-*` 仓库。
-- 接口、数据库、权限、订单、库存、物流、财务：优先检查 `mkerp`。
-- 前后端联动：同时检查后端接口和前端调用。
-- 用户未指定项目且无法推断时，智能体最多问 1 个关键问题。
-
 ### 7.1.2 mk-erp-wiki 知识库使用策略
 
 `<mk-lab-root>/mk-erp-wiki/` 下的文档不建议全文复制进 prompt，应作为 agent 按需读取的项目知识库：
