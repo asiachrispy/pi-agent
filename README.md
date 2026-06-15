@@ -1,149 +1,171 @@
-# pi-agent — Pi 三条产品线统一管理工作区
+# pi-agent — Pi 工作区维护说明
 
-本目录用于**统一管理 Pi 生态的多个仓库**，方便在本地一起查看、二次开发与定期合并上游。
+本目录用于维护 Pi 生态相关仓库的本地协作规范与历史记录。
 
 > 本 README 是「工作区说明书」，由我们自己维护，**不属于任何上游仓库**，因此不会影响各子仓库与上游的合并。
-> 改 `pi` / `pi-web` / `pi-app` 里**共有文件**都会增加未来 merge `upstream` 的冲突，需遵循 §5 的「结构等价」原则。
+>
+> **当前状态**：`pi-web` 已移除，不再作为独立仓库维护；此前沉淀在 `pi-web` 的共享 Web 能力已经合并进 `pi-app`，后续 Web UI 与桌面产品统一在 `pi-app` 维护。
 
 ---
 
 ## 1. 仓库总览
 
-三条线结构对称：每个目录都是「我们的 fork（`origin`，可推送）+ 只读上游（`upstream`）」。
+当前活跃维护两条主线：
 
 | 目录 | 角色 | origin（我们的 fork，可推送） | upstream（只读·定期合并） |
 |------|------|------------------------------|--------------------------|
 | `pi` | 引擎 / CLI | `asiachrispy/pi` | `earendil-works/pi` |
-| `pi-web` | 纯浏览器 Web fork | `asiachrispy/pi-web` | `agegr/pi-web` |
-| `pi-app` | macOS 桌面 fork（主线） | `asiachrispy/pi-app` | `asiachrispy/pi-web`（分层·见下） |
+| `pi-app` | 统一 Web + macOS 桌面主线 | `asiachrispy/pi-app` | 以 `pi-app` 仓库当前 `upstream` 配置为准 |
 | `pi-fetch-tool` | pi 扩展（`web_fetch`）·**已废弃** | `asiachrispy/pi-fetch-tool` | —（改用社区 `pi-web-access`） |
+| `pi-web` | **历史仓库，已移除** | 曾为 `asiachrispy/pi-web` | 曾为 `agegr/pi-web` |
 
-> ⚠️ **关键约束**：源头 `agegr/pi-web` 与 `earendil-works/pi` 我们**无写权限**（只读 `upstream`）。但我们对每条线都有**可写的 fork**（`asiachrispy/*`），二次开发都落在 fork 上。对共有文件的改动（如 i18n）是**无法回馈源头的永久 fork 差异**，治理目标是让它「易于持续合并」而非「消除」。
->
-> **已采用分层模型**：`agegr/pi-web` → `asiachrispy/pi-web`（共享 Web 层）→ `asiachrispy/pi-app`（桌面层）。通用 Web 改动只在 pi-web 做一次，pi-app 合并 pi-web 自动获得。详见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) §5。
+关键约束：
 
-经探测：`earendil-works/pi` 与 `badlogic/pi-mono` 是**同一个引擎上游**；`badlogic/pi-web` 不存在——`agegr/pi-web` 即 pi-web 这条线的原创源头。
+- `pi-web` 不再单独拉取、合并、开发、打包或发布。
+- 所有 Web UI、PWA、产品化界面、远程访问、推送、macOS 壳与原生桥相关改动，统一落到 `pi-app`。
+- 引擎、CLI、agent runtime、工具调用、会话协议与扩展机制相关改动，仍落到 `pi`。
+- 源头 `earendil-works/pi` 我们无写权限；对上游共有文件的改动属于长期 fork 差异，目标是让它易于持续合并。
+
+经探测：`earendil-works/pi` 与 `badlogic/pi-mono` 是同一个引擎上游；`badlogic/pi-web` 不存在，历史上的 pi-web 源头是 `agegr/pi-web`。
 
 ---
 
-## 2. 三条产品线的边界（职责互斥，避免功能交叉）
+## 2. 产品线边界
 
 ```mermaid
 graph TD
-    UP1["earendil-works/pi<br/>(= badlogic/pi-mono, 引擎上游)"] -->|fork·merge| PI["asiachrispy/pi<br/>【pi-cli 引擎二次开发】"]
-    PI -->|npm runtime 依赖| APP
-    UP2["agegr/pi-web<br/>(Web 只读源头)"] -->|fork·merge| WEB["asiachrispy/pi-web<br/>【pi-web 共享 Web 层】"]
-    WEB -->|fork·merge| APP["asiachrispy/pi-app<br/>【pi-app 桌面主线】"]
-    EXT["asiachrispy/pi-fetch-tool<br/>(pi 扩展: web_fetch)"] -.->|pi install| PI
-    EXT -.->|pi install| APP
+    UP1["earendil-works/pi<br/>(= badlogic/pi-mono, 引擎上游)"] -->|fork·merge| PI["asiachrispy/pi<br/>pi-cli 引擎二次开发"]
+    PI -->|npm runtime 依赖| APP["asiachrispy/pi-app<br/>统一 Web + macOS 桌面主线"]
+    OLD["agegr/pi-web / asiachrispy/pi-web<br/>历史 Web 线，已合并并移除"] -.历史来源.-> APP
+    EXT["asiachrispy/pi-fetch-tool<br/>已废弃"] -.改用 pi-web-access.-> PI
+    EXT -.改用 pi-web-access.-> APP
 
     classDef ours fill:#1f6feb,stroke:#0b3d91,color:#fff;
     classDef up fill:#444,stroke:#222,color:#fff;
-    class PI,WEB,APP,EXT ours;
-    class UP1,UP2 up;
+    classDef old fill:#777,stroke:#444,color:#fff;
+    class PI,APP,EXT ours;
+    class UP1 up;
+    class OLD old;
 ```
 
 | 产品线 | 只负责 | 明确不做 |
 |--------|--------|----------|
-| **pi-cli**（`pi`） | Agent runtime、多 provider LLM、工具调用、会话 `jsonl` 格式、扩展机制、RPC 协议、TUI、`pi` 命令 | 任何 Web / GUI / 产品化文案 |
-| **pi-web**（`pi-web`） | 跨平台纯 Web UI：会话浏览 / 对话 / 分支 / 模型切换 | macOS 壳、原生桥、桌面专属能力 |
-| **pi-app**（`pi-app`） | `.app` 薄壳（WKWebView + 内嵌 Node）、`piNative` 原生桥、PWA、产品化白话 UI、远程 / 推送 / 场景 | 重新实现对话 / 分支 / 会话读取等 Web 核心逻辑 |
+| **pi-cli**（`pi`） | Agent runtime、多 provider LLM、工具调用、会话 `jsonl` 格式、扩展机制、RPC 协议、TUI、`pi` 命令 | Web / GUI / macOS 壳 / 产品化文案 |
+| **pi-app**（`pi-app`） | Next.js Web UI、PWA、`.app` 薄壳（WKWebView + 内嵌 Node）、`piNative` 原生桥、产品化白话 UI、远程 / 推送 / 场景 | 重新实现 agent runtime、工具系统、模型 provider、会话底层协议 |
 
-三者共享同一数据契约 `~/.pi/agent/`（`auth.json` / `settings.json` / `sessions/` / `models.json`，可用 `PI_CODING_AGENT_DIR` 覆盖），这是协作纽带，不算交叉。
+两者共享同一数据契约 `~/.pi/agent/`（`auth.json` / `settings.json` / `sessions/` / `models.json`，可用 `PI_CODING_AGENT_DIR` 覆盖），这是协作纽带，不算交叉。
 
 ---
 
-## 3. git 同源事实（为什么不是“两份重复代码”）
+## 3. pi-web 的历史定位
 
-- `pi-app` 与 `pi-web` **首提交 hash 完全相同**（`95c7a655`）→ `pi-app` 是 `pi-web` 的 **git 下游 fork**。
-- `pi-web` 的 HEAD 正是两者的最近共同祖先，**`pi-app` 已包含 `pi-web` 的全部提交**，仅多出我们自己的二次开发提交。
-- 即：`pi-app = 最新的 pi-web + 我们的二次开发`，并通过 `git merge upstream/main` **持续吸收 pi-web 上游**。
+`pi-app` 与 `pi-web` 历史上同源：`pi-app` 起初是 `pi-web` 的 git 下游 fork，后来在桌面壳、远程能力、i18n、文件预览、终端、产品化入口等方向持续扩展。
 
-因此所谓“重复”是同一条 git 线上的二次开发，不是两份失控拷贝。
+此前曾采用过分层模型：
+
+```text
+agegr/pi-web -> asiachrispy/pi-web -> asiachrispy/pi-app
+```
+
+该模型已经停止使用。当前结论是：
+
+- `pi-web` 目录从本工作区移除。
+- `asiachrispy/pi-web` 不再作为共享 Web 层维护。
+- 以前“上移到 pi-web”的治理策略停止执行。
+- 后续 Web 通用能力直接在 `pi-app` 里维护，避免 `pi-web` / `pi-app` 双线同步成本。
+
+旧文档仅作为历史决策记录保留，见 §7。
 
 ---
 
 ## 4. 上游合并工作流
 
-约定：`origin` = 我们的 fork（可推送）；`upstream` = 只读源头。三条线的 `upstream` push 地址都已禁用（`DISABLE_PUSH_UPSTREAM`），防止误推；并已启用 `git rerere`（记忆冲突解法，便于反复合并）。
+约定：`origin` = 我们的 fork（可推送）；`upstream` = 只读源头。合并前若工作区有未提交改动，先提交或暂存，不在脏树上合并。
 
 ```bash
-# pi 引擎：合并上游 → 推回我们的 fork
-cd pi      && git fetch upstream && git merge upstream/main && git push origin main
+# pi 引擎：合并上游 → 验证 → 推回我们的 fork
+cd pi
+git fetch upstream
+git merge upstream/main
+git push origin main
 
-# pi-web 纯 Web fork：合并上游 → 推回我们的 fork
-cd pi-web  && git fetch upstream && git merge upstream/main && git push origin main
-
-# pi-app 桌面主线：upstream 是 asiachrispy/pi-web（分层）→ 推回我们的 fork
-cd pi-app  && git fetch upstream && git merge upstream/main && git push origin main
+# pi-app：统一维护 Web + 桌面 → 验证 → 推回我们的 fork
+cd ../pi-app
+git fetch upstream
+git merge upstream/main
+git push origin main
 ```
 
-**分层下的合并顺序**：上游有更新时，先在 `pi-web` 合并 `agegr/pi-web` 并推送，再在 `pi-app` 合并 `pi-web`。这样通用 Web 改动和上游更新都经 pi-web 这一层统一下传，pi-app 不必直接面对 `agegr`。完整合并维护（merge 策略、冲突原则、工具）见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md)。
+执行要点：
+
+- 不再进入 `pi-web` 目录执行同步，也不要求“先 pi-web 后 pi-app”。
+- `pi-app` 的 `upstream` 以仓库实际配置为准；若后续调整远程，只需保持“`pi-app` 自己直接同步上游”的原则。
+- 合并后必须验证再打包或发布：`tsc --noEmit` + `vitest run`；`pi-app` 还需按发布目标执行 `swift build` / `swift test`。
+- 合并若有冲突，优先保留双方真实意图；对 `pi-app` 已成熟的产品化实现，不因历史 `pi-web` 形态而回退。
+- 若上游本次无更新（落后 0），记录“已确认最新”即可，无需空合并。
 
 ---
 
-## 5. 二次开发治理规则（核心：让上游可持续低冲突合并）
-
-前提：源头（`agegr/pi-web`、`earendil-works/pi`）**只读不可改**，对共有文件的改动无法回馈、只能留在我们的 fork 里。因此二次开发改到哪里、怎么改，直接决定未来每次 merge 上游的冲突大小。目标是让永久 fork 差异**易于持续合并**。
+## 5. 二次开发治理规则
 
 1. **改动归属**
-   - 引擎能力 → **先查 [pi.dev/packages](https://pi.dev/packages) 有无现成社区扩展**（`pi install npm:<pkg>` 写入 `~/.pi/agent/settings.json`，pi CLI 与 pi-app 共享加载，零应用改动）；无现成再自建扩展包，尽量不改 `pi` 引擎源码。
-     - ⚠️ **避免重复造轮子**：`web_fetch` 自研（`pi-fetch-tool`）已被社区 `pi-web-access` 取代（其超集）；`memory` 由运行时 auto-install。详见下方 §7。注意区分**agent 层**（可被扩展替换）与 **pi-app 前端/原生层**（i18n UI、聊天内 markdown 渲染、文件预览、终端——扩展替代不了，保留自研）。
-   - **通用 Web 能力**（跨平台、非 macOS）→ 进 `asiachrispy/pi-web`；pi-app 通过合并 pi-web 自动获得（分层链路）。
-   - **macOS / 桌面 / 原生 / 产品化能力** → 进 `asiachrispy/pi-app`，尽量放在**新增独有文件**里，不碰共有文件。
-   - 无论改哪条 fork 的共有文件，都力求**结构等价**（只替换字符串 / 最小插入，不重排 JSX），以便 git 三方合并能自动吃掉上游对同一文件其他部分的改动。
-2. **`pi-web` 是可写 Web fork**：在 `asiachrispy/pi-web` 上做通用 Web 二次开发，定期从 `agegr/pi-web` 合并；维护流程见 [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md)。
-3. **警惕冲突地雷**：`pi-app` 已对部分 `pi-web` 共有文件做了大幅重写（如 `AppShell.tsx` ≈ 69% 不同），这些是未来 merge `pi-web` 上游的高冲突点。对共有文件**优先用扩展点 / 组合，而非整段重写**，把专属逻辑抽到 pi-app 独有的新文件（已落地示例见 §7）。
-4. **i18n 冲突缓解（无法根治）**：i18n 是头号系统性冲突源且无法回馈上游，只能按「可维护的永久 fork 差异」管理——结构等价化、文案集中在 `lib/i18n`、小步频繁合并、必要时上「上游硬编码 → `t(key)`」的半自动 merge 辅助。详见 `docs/conflict-audit.md` P0。
-5. **命名澄清**：`pi-web` = 我们的纯 Web fork（源头叫 `agegr/pi-web`）；`pi-app` = 我们的 macOS 桌面产品。避免在 `pi-app` 内部文档继续自称 “pi-web”。
+   - 引擎能力 → 先查 [pi.dev/packages](https://pi.dev/packages) 有无现成社区扩展；无现成再自建扩展包，尽量不改 `pi` 引擎源码。
+   - Web UI / PWA / 产品化 / macOS / 远程 / 推送 / 原生桥 → 统一进 `asiachrispy/pi-app`。
+   - 已废弃或可由扩展替代的能力，不再放回核心仓库。
+2. **避免重复造轮子**
+   - `web_fetch` 自研（`pi-fetch-tool`）已被社区 `pi-web-access` 取代；`memory` 由运行时 auto-install。
+   - 注意区分 agent 层（可被扩展替换）与 `pi-app` 前端/原生层（i18n UI、聊天内 markdown 渲染、文件预览、终端等）。
+3. **降低长期 fork 差异成本**
+   - 改上游共有文件时，保持结构等价：最小插入、少重排、不顺手大重构。
+   - 产品化或桌面专属逻辑优先抽到 `pi-app` 独有组件、hook、lib 或 route 里。
+   - 对反复冲突文件启用并维护 `git rerere` 记录。
+4. **命名澄清**
+   - 对外产品和当前代码主线称 `pi-app`。
+   - 不再把当前 Web UI 称为 `pi-web`；`pi-web` 只指历史仓库或历史文档。
 
 ---
 
-## 6. 当前本地状态（建立时快照）
+## 6. 打包与发布
 
-| 仓库 | 分支 | HEAD | 相对上游 |
-|------|------|------|----------|
-| `pi` | `main` | `1fcb9d3c` | 二次开发领先 `earendil-works/pi` 18 提交、落后 0（增量明细见 §8） |
-| `pi-web` | `main` | `cde99d7` | `origin=asiachrispy/pi-web`，当前 = 上游 `agegr/pi-web`（尚无我们的改动） |
-| `pi-app` | `main` | `e336917` | upstream=`asiachrispy/pi-web`；领先 149 提交，待合并上游 0 |
+自 v0.8.2 起，macOS 打包统一走 Next standalone 输出。
 
----
+- 打包入口：`npm run package:macos`（`pi-app/scripts/package-macos-app.sh`）。
+- 脚本内部用 `PI_STANDALONE=1` 触发 `output: "standalone"`。
+- bundle 布局：`server.js` + 追踪后的 `node_modules` + `.next/static` + `public` + 内嵌 Node。
+- `bin/pi-app.js` 检测到 `server.js` 即以 `node server.js` 启动；普通 npm 安装无 `server.js` 时回退 `next start`。
+- 体积基线：Pi.app 约 224M、DMG 约 93M。若体积明显回升，先排查 standalone 是否生效。
 
-## 7. 相关文档 & 已落地工作
+发布前必须完成：
 
-- [`docs/conflict-audit.md`](docs/conflict-audit.md) — pi-app ↔ pi-web 合并冲突审计：49 个共有文件冲突地雷清单、i18n 头号根因分析、缓解策略（上游只读、无法根治）。
-- [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) — pi-web fork 合并维护手册：merge 策略、标准流程、冲突解决原则、省力工具（rerere / .gitattributes）、分层链路下的自上而下合并顺序。
-- [`docs/pi-app-to-pi-web-uplift.md`](docs/pi-app-to-pi-web-uplift.md) — pi-app 149 提交的「通用能力上移」评估：分类总表、上移优先级（P1 终端面板首推）、i18n 在分层下可消除 pi-app 侧冲突、workbench 归属待决策。
-- **共有组件去耦（第一步）** — [asiachrispy/pi-app#7](https://github.com/asiachrispy/pi-app/pull/7)：把 ChatInput 工具档位映射、AppShell 终端面板状态抽到独立可测模块（`lib/chat-input-tool-presets`、`hooks/useTerminalPanel`），行为不变、253 测试通过。后续按 §5 继续把专属逻辑移出共有组件。
-- **采用社区扩展替代自研（web_fetch）** — 执行 `pi install npm:pi-web-access` 后，pi CLI 与 pi-app 会从共享 agent dir 自动加载。它是自研 `web_fetch` 的超集，支持搜索、抓取、PDF、YouTube、GitHub 克隆等能力。
-  - 已合并 [asiachrispy/pi-app#8](https://github.com/asiachrispy/pi-app/pull/8)：下线 pi-app 的 web-fetch 胶水（`WebFetchSettings`/3 路由/`piNative.webFetch` 类型/i18n），净删 674 行，未动 macOS Swift。
-  - 已合并 [asiachrispy/pi-fetch-tool#1](https://github.com/asiachrispy/pi-fetch-tool/pull/1)：标记 `pi-fetch-tool` 废弃，指向 `pi-web-access`。
-  - 已合并 [asiachrispy/pi-app#9](https://github.com/asiachrispy/pi-app/pull/9)：移除 macOS Swift 端 webFetch 死代码（`HiddenWebFetcher`、`PiNativeBridge.webFetch`、空测试目标），净删 402 行；保留核心原生能力，并补 `PiNativeBridgeTests` 覆盖既有 piNative 注入与 `webFetch` 移除。
-  - 剩余 npm registry 废弃标记需发布权限和 OTP：
-
-    ```bash
-    npm deprecate pi-fetch-tool "use pi install npm:pi-web-access" --otp=123456
-    ```
-
-    如需在 CI 执行，可创建勾选 **Bypass 2FA** 的 Granular Access Token（Read and write，范围限 `pi-fetch-tool`），再追加 `--//registry.npmjs.org/:_authToken=$NPM_TOKEN`。
+1. 同步 `pi` 与 `pi-app` 上游；不再同步 `pi-web`。
+2. 运行验证：`tsc --noEmit`、`vitest run`，`pi-app` 还需 `swift build` / `swift test`。
+3. 更新根 `CHANGELOG.md`。
+4. 重新打包并冷烟验证 `/`、`/api/health`、`/api/sessions` 均 200。
+5. 打 tag 并发布 GitHub Release。
 
 ---
 
-## 8. 本地 `pi` 相对上游（`earendil-works/pi`）的增量
+## 7. 相关文档
 
-当前 `pi` 领先上游 **18 提交、落后 0**（HEAD `1fcb9d3c`，`git diff --stat upstream/main..HEAD` 共 61 文件、约 +7400/−960 行）。这些是我们在引擎 fork 上自建的能力，按主题归纳如下。
+- [`docs/pi-app-unified-maintenance.md`](docs/pi-app-unified-maintenance.md) — 当前维护手册：`pi-web` 移除后，`pi-app` 统一承接 Web + 桌面代码的规则。
+- [`docs/conflict-audit.md`](docs/conflict-audit.md) — 历史档案：pi-app ↔ pi-web 合并冲突审计。现在仅用于理解早期 fork 差异来源。
+- [`docs/pi-web-merge-maintenance.md`](docs/pi-web-merge-maintenance.md) — 历史档案：旧 pi-web fork 合并维护手册。当前流程不再执行。
+- [`docs/pi-app-to-pi-web-uplift.md`](docs/pi-app-to-pi-web-uplift.md) — 历史档案：旧“通用能力上移到 pi-web”评估。当前策略已改为统一留在 `pi-app`。
+- [`docs/product-team-agent-plan.md`](docs/product-team-agent-plan.md) — 产品研发组智能体方案。
 
-> 复核命令：`cd pi && git fetch upstream && git log --oneline upstream/main..HEAD`。
+---
 
-| 主题 | 增量内容 | 关键文件 | 来源提交 |
-|------|----------|----------|----------|
-| **RPC 树导航 + pi-web 远程** | 让 pi-web 经 RPC 远程驱动 agent，支持会话树导航与工具命令 | `coding-agent/src/modes/rpc/*`、`core/agent-session-tree.ts`、`core/agent-session-queue.ts`、`docs/rpc.md`、`docs/pi-web-remote.md` | `05325f59` |
-| **memory 记忆扩展（类人遗忘）** | 记忆扩展示例 + 首次运行自动安装（修 jiti Node builtins）；曾独立成 `pi-memory` 包后精简为「example 扩展 + auto-install」 | `coding-agent/examples/extensions/memory.ts`(787 行)、`core/ensure-memory-extension.ts`、`docs/memory-design*.md`、`docs/memory-features.md` | `6aa70629`/`25368a21`/`0eb8ed44`/`8c6dad34`/`8c5d3720` |
-| **Agnes AI provider + 模型** | 新增 Agnes provider 与模型、显示名、环境变量密钥 | `ai/src/providers/*`、`ai/src/models.ts`、`core/provider-display-names.ts`、`ai/src/env-api-keys.ts` | `935ec8e7` |
-| **package-manager 重构 + 边界加固** | 拆分包管理为 git / npm / source-parser，新增包边界与大文件检查 | `core/package-manager-{git,npm}.ts`、`core/package-source-parser.ts`、`scripts/check-large-files.mjs`、`scripts/check-package-boundaries.mjs` | `632d8b23`/`110d50fd` |
-| **AI 重试分类 / 定价 / responses 增强** | 重试错误分类、service-tier 定价、openai-responses 共享逻辑 | `ai/src/utils/retry-classification.ts`、`ai/src/providers/openai-responses*.ts` | 含于上游合并修复批次 |
-| **system prompt 技能工作流增强** | 扩充 skill workflow 指引 | `agent/src/agent-loop.ts`、system prompt | `b3988f64` |
-| **dev-browser 技能 + skills-lock** | 新增 dev-browser 技能与技能锁定文件 | `.pi/skills/dev-browser/SKILL.md`、`skills-lock.json` | `8c5d3720` |
-| **版本与上游合并维护** | Release v0.78.2；合并上游 v0.79.1 后的类型/未用变量修复 | `CHANGELOG.md`、各包 | `a253843e`/`7965963e`/`7923991f`/`dcf0bbc3` |
+## 8. 本地 `pi` 相对上游的增量
 
-> 治理提示（呼应 §5）：这些增量是**引擎 fork 的永久差异**，每次 `merge upstream/main` 都要带着走。其中 `memory`、`web_fetch`（已迁社区 `pi-web-access`）等「引擎能力」应优先评估能否由社区扩展承接，减少需要长期维护的源码改动；RPC / package-manager 等深度引擎改造则属必须自维护的部分。
+`pi` fork 上的主要长期差异：
+
+| 主题 | 增量内容 | 关键文件 |
+|------|----------|----------|
+| RPC 树导航 + 远程驱动 | 支持会话树导航与工具命令 | `coding-agent/src/modes/rpc/*`、`core/agent-session-tree.ts`、`core/agent-session-queue.ts` |
+| memory 记忆扩展 | 记忆扩展示例 + 首次运行自动安装 | `coding-agent/examples/extensions/memory.ts`、`core/ensure-memory-extension.ts` |
+| Agnes AI provider + 模型 | 新增 Agnes provider 与模型、显示名、环境变量密钥 | `ai/src/providers/*`、`ai/src/models.ts` |
+| package-manager 重构 | 拆分 git / npm / source-parser，新增包边界与大文件检查 | `core/package-manager-{git,npm}.ts`、`core/package-source-parser.ts` |
+| AI 重试分类 / 定价 / responses 增强 | 重试错误分类、service-tier 定价、openai-responses 共享逻辑 | `ai/src/utils/retry-classification.ts`、`ai/src/providers/openai-responses*.ts` |
+| system prompt 技能工作流增强 | 扩充 skill workflow 指引 | `agent/src/agent-loop.ts` |
+
+这些增量是引擎 fork 的长期差异。每次 `merge upstream/main` 都要带着走；能由社区扩展承接的能力优先迁出核心，深度引擎改造则继续自维护。

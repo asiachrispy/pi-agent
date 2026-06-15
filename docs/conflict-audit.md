@@ -1,5 +1,7 @@
 # pi-app ↔ pi-web 合并冲突审计
 
+> **历史档案**：本文记录的是 `pi-web` 仍作为独立共享层维护时的冲突审计。当前 `pi-web` 已移除，不再维护；Web + 桌面统一在 `pi-app` 维护。本文可用于理解早期 fork 差异来源，但不再代表当前合并流程。当前流程见 [`docs/pi-app-unified-maintenance.md`](docs/pi-app-unified-maintenance.md)。
+
 **日期**：2026-06-10
 **基线**：`pi-app` HEAD (`e336917`) vs `upstream/main` = `agegr/pi-web` HEAD (`cde99d7`)
 **方法**：`pi-app` 相对 pi-web 当前版本「被修改的共有文件 (M)」即未来合并 pi-web 上游的冲突风险点；改动行数越多、重写比例越高，风险越大。

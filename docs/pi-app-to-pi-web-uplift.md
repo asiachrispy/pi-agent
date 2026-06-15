@@ -1,5 +1,7 @@
 # pi-app → pi-web 通用能力「上移」评估
 
+> **历史档案（已废弃）**：`pi-web` 已移除，不再维护；“通用能力上移到 pi-web”的策略已停止。此前上移/分层记录仅用于理解历史决策，后续 Web 与桌面能力统一在 `pi-app` 维护。当前流程见 [`docs/pi-app-unified-maintenance.md`](docs/pi-app-unified-maintenance.md)。
+
 **目的**：分层模型（`agegr/pi-web` → `asiachrispy/pi-web` → `asiachrispy/pi-app`）下，**通用 Web 能力应沉淀在 pi-web 层**。pi-app 历史上积累了 149 个提交，其中不少其实是通用 Web 能力，被放在了 pi-app。本文评估哪些适合上移到 `asiachrispy/pi-web`，以减少 pi-app 对共有文件的偏离、消除双份维护。
 
 **方法**：基于 149 个提交（140 非 merge + 9 merge）的分类。精确归属仍需逐提交看 diff；本文给出类别、优先级与执行建议。

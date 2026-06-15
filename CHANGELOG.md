@@ -1,6 +1,6 @@
 # 更新日志 / Changelog
 
-本文件记录 **pi-agent 工作区**的重要变更（含跨子仓 `pi` / `pi-app` / `pi-web` 的协作改动），遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+本文件记录 **pi-agent 工作区**的重要变更（含跨子仓 `pi` / `pi-app` 的协作改动；`pi-web` 仅作为历史仓库名保留），遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
 > **维护约定**：每次合并到 `main` 后，必须更新本文件。详见 [AGENTS.md「更新日志维护」](./AGENTS.md)。
 >
@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 ### Changed
+- **更新 pi-web 移除后的维护说明**：`pi-web` 已不再作为独立仓库维护，历史共享 Web 层合并进 `pi-app`；根 `README.md` 与 `AGENTS.md` 改为 `pi` + `pi-app` 两条活跃主线，删除发布/打包前“先 pi-web 后 pi-app”的同步要求；新增 `docs/pi-app-unified-maintenance.md` 作为当前 SOP，并将旧 `pi-web` 合并、上移、冲突审计文档标记为历史档案。涉及：`README.md`、`AGENTS.md`、`docs/*`。
 - **拉取 pi 上游最新代码**：`pi` 引擎先快进到 `origin/main`（+28），再合并 `upstream/main`（earendil-works/pi，+17），共 4 处冲突——`packages/coding-agent/src/core/package-manager.ts` 与其测试因 fork 已将逻辑重构拆分到 `package-manager-npm.ts`/`package-manager-git.ts`/`package-source-parser.ts`（已含 upstream 的版本感知 `shouldUpdate` 等），保留 fork 版本；`packages/ai/CHANGELOG.md`、`packages/coding-agent/CHANGELOG.md` 合并双方 `[Unreleased]` 条目。合并后 `tsgo --noEmit` 通过、`package-manager` 单测 161 全过；其余既有失败（resource-loader flaky、session-id、3592 memory 特性、footer-debounce）经基线对比确认为合并前即存在、非本次引入。已推送 `origin/main`（`5a2b03eb`）。`pi-app` 本就最新，无需拉取。
 
 ## [0.8.3] - 2026-06-12

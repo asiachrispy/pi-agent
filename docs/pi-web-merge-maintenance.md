@@ -1,5 +1,7 @@
 # pi-web fork 合并维护手册
 
+> **历史档案（已废弃）**：`pi-web` 已从本工作区移除，不再维护；此前共享 Web 层已经合并进 `pi-app`，后续 Web + 桌面统一在 `pi-app` 维护。本文只保留为旧分层模型的历史记录，不再作为当前操作 SOP。当前流程见 [`docs/pi-app-unified-maintenance.md`](docs/pi-app-unified-maintenance.md)。
+
 **适用对象**：`asiachrispy/pi-web`（我们可写的纯 Web fork）
 **上游**：`agegr/pi-web`（只读，配为 `upstream`）
 **目标**：在 pi-web 上持续做二次开发的同时，能低成本地定期吸收上游更新。
