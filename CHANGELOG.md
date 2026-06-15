@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Changed
+- **拉取 pi 上游最新代码**：`pi` 引擎先快进到 `origin/main`（+28），再合并 `upstream/main`（earendil-works/pi，+17），共 4 处冲突——`packages/coding-agent/src/core/package-manager.ts` 与其测试因 fork 已将逻辑重构拆分到 `package-manager-npm.ts`/`package-manager-git.ts`/`package-source-parser.ts`（已含 upstream 的版本感知 `shouldUpdate` 等），保留 fork 版本；`packages/ai/CHANGELOG.md`、`packages/coding-agent/CHANGELOG.md` 合并双方 `[Unreleased]` 条目。合并后 `tsgo --noEmit` 通过、`package-manager` 单测 161 全过；其余既有失败（resource-loader flaky、session-id、3592 memory 特性、footer-debounce）经基线对比确认为合并前即存在、非本次引入。已推送 `origin/main`（`5a2b03eb`）。`pi-app` 本就最新，无需拉取。
+
 ## [0.8.3] - 2026-06-12
 
 ### Fixed
