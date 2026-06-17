@@ -17,7 +17,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import type { AgentToolResult } from "@earendil-works/pi-agent-core";
-import type { Message } from "@earendil-works/pi-ai";
+import type { Message, Model } from "@earendil-works/pi-ai";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { type ExtensionAPI, getMarkdownTheme, withFileMutationQueue } from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
@@ -275,6 +275,11 @@ function getPiInvocation(args: string[]): { command: string; args: string[] } {
 }
 
 type OnUpdateCallback = (partial: AgentToolResult<SubagentDetails>) => void;
+
+function appendInheritedModelArgs(args: string[], model: Model<any> | undefined): void {
+	if (!model?.provider || !model?.id) return;
+	args.push("--provider", model.provider, "--model", model.id);
+}
 
 type KnownProject = "pi-agent" | "pi" | "pi-app";
 
@@ -565,6 +570,7 @@ async function runSingleAgent(
 	signal: AbortSignal | undefined,
 	onUpdate: OnUpdateCallback | undefined,
 	makeDetails: (results: SingleResult[]) => SubagentDetails,
+	inheritedModel: Model<any> | undefined,
 ): Promise<SingleResult> {
 	const agent = agents.find((a) => a.name === agentName);
 
@@ -584,6 +590,7 @@ async function runSingleAgent(
 
 	const args: string[] = ["--mode", "json", "-p", "--no-session"];
 	if (agent.model) args.push("--model", agent.model);
+	else appendInheritedModelArgs(args, inheritedModel);
 	if (agent.tools && agent.tools.length > 0) args.push("--tools", agent.tools.join(","));
 
 	let tmpPromptDir: string | null = null;
@@ -876,6 +883,7 @@ export default function (pi: ExtensionAPI) {
 						signal,
 						chainUpdate,
 						makeDetails("chain"),
+						ctx.model,
 					);
 					results.push(result);
 
@@ -973,6 +981,7 @@ export default function (pi: ExtensionAPI) {
 							}
 						},
 						makeDetails("parallel"),
+						ctx.model,
 					);
 					allResults[index] = result;
 					emitParallelUpdate();
@@ -1018,6 +1027,7 @@ export default function (pi: ExtensionAPI) {
 					signal,
 					onUpdate,
 					makeDetails("single"),
+					ctx.model,
 				);
 				const isError = isFailedResult(result);
 				if (isError) {
