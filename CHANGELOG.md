@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- **pi-app PR #10/#11 合并**：侧边栏/右栏可拖拽调整宽度（`usePanelResize`）；无 session 时打开工作区文件浏览器 403 问题修复（`recentWorkspaceCwds` + 默认工作区授权）；`/api/cwd/validate` 后立即失效 allowed-roots 缓存，避免刚打开目录仍 403。涉及：`pi-app` commit `929ec20`。
+- **对话区相对路径文件预览 Access denied**（pi-app）：`resolveFilePathForOpen` 将 `login` 等裸文件名按 session cwd 解析为绝对路径后再请求 `/api/files`。涉及：`pi-app` commit `81b8122`。
+- **subagent 误要求 API key**（pi-agent）：未配置 model 的 agent 继承父会话 `ctx.model` 的 `--provider`/`--model`，不再单独弹 Anthropic key。涉及：`.pi/extensions/subagent/index.ts` commit `262a191`。
+
 ### Added
 - **pi-app 首页「我的工作」列表增加「项目名称」列（简称）**（D-2026-002 / pi-app v0.8.6）：`ProductHistoryItem` 新增 `projectName` 字段（由 `cwd` 派生，basename + 「未设置」 fallback）；`WorkbenchHome` 收起态 + 展开态均展示；i18n (zh-CN / en) 加 `projectName` 翻译；单测覆盖 `deriveProjectName` + `buildHistoryItems` 集成。本地 commit `fc2e4dc feat(workbench)`；推送到 origin 取决用户终端在网络恢复后跑 `git push origin main`。
 - **聊天输入折叠 expanded /team prompt 为短指令**（D-2026-003 / pi-app v0.8.6）：`displayUserMessageText` 在聊天回放中折叠 pi-agent /team 入口模板为 `/team <args>`；单测 1 例覆盖。本地 commit `d93029b feat(chat)`。
