@@ -1,6 +1,6 @@
 # 更新日志 / Changelog
 
-本文件记录 **pi-agent 工作区**的重要变更（含跨子仓 `pi` / `pi-app` 的协作改动；`pi-web` 仅作为历史仓库名保留），遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+本文件记录 **pi-agent 工作区**的重要变更（含跨子仓 `pi` / `pi-app` 的协作改动），遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范。
 
 > **维护约定**：每次合并到 `main` 后，必须更新本文件。详见 [AGENTS.md「更新日志维护」](./AGENTS.md)。
 >
@@ -8,9 +8,30 @@
 
 ## [Unreleased]
 
+### Added
+- **pi-app 首页「我的工作」列表增加「项目名称」列（简称）**（D-2026-002 / pi-app v0.8.6）：`ProductHistoryItem` 新增 `projectName` 字段（由 `cwd` 派生，basename + 「未设置」 fallback）；`WorkbenchHome` 收起态 + 展开态均展示；i18n (zh-CN / en) 加 `projectName` 翻译；单测覆盖 `deriveProjectName` + `buildHistoryItems` 集成。本地 commit `fc2e4dc feat(workbench)`；推送到 origin 取决用户终端在网络恢复后跑 `git push origin main`。
+- **聊天输入折叠 expanded /team prompt 为短指令**（D-2026-003 / pi-app v0.8.6）：`displayUserMessageText` 在聊天回放中折叠 pi-agent /team 入口模板为 `/team <args>`；单测 1 例覆盖。本地 commit `d93029b feat(chat)`。
+- **team 流程效率改进 5 项落地**（D-2026-004 / pi-agent）：
+  - **#1 subagent 注册**（partial）：创建 `~/.pi/agent/agents/team.md`（user-level）+ `~/.pi/agent/bin/pi` shim（多路径 fallback 到 `pi-app/node_modules/.../cli.js`）。subagent 工具在 pi-web session 跨引擎 MCP/渲染层问题未修复，降级主会话执行。
+  - **#2 wiki/summary.md**：工作区快查表（决策树 + skill 触发矩阵 + 关键命令 + 子目录速查 + 已知陷阱）≈3KB，替代每次读 5+ wiki；配套 `scripts/snapshot-workspace.sh` 动态刷新业务仓元数据。
+  - **#3 demands/template.md metadata**：`requires_release` / `requires_upstream_sync` / `requires_gh_release` / `cold_smoke_required` / `visual_qa_required` / `release_scope` 6 字段，把决策前置，不中途问。
+  - **#4 .pi/protocols/release.md**：9 步标准流程 + 3 步 human_confirmation（push / push tag / gh release）+ 失败模式矩阵。
+  - **#5 wiki/decisions/team-decisions.md**：12 类决策点（weight / 越界 / upstream / 端口 / 拆 commit / lockfile / DMG 基线 / push / status 转换 / 询问判定 / 反模式 / 改进）。
+- **pi-app v0.8.6 release 本地就绪**（D-2026-002 关联）：4 commit + tag `v0.8.6` + `Pi.app` 225M（Info.plist CFBundleShortVersionString 0.8.6）+ `Pi-0.8.6.dmg` 93.9MB（基线 93M 完美匹配）+ 冷烟 v0.8.6（PORT=30142，3 端点 200，`/api/health` 返回 `version=0.8.6`）。仅 push origin main + push tag v0.8.6 + gh release create 未在 session 完成，待用户终端网络恢复后补。
+- **`package-lock.json` 同步**（D-2026-002 关联）：npm 11 lockfile v3 格式调整，提交 `94b175a chore(deps)`。
+- **`wiki/decisions/team-decisions.md`**（D-2026-004 #5）：沉淀 12 类决策点表，让 team 按表自决，不反复问同款问题。
+- **`.pi/protocols/release.md`**（D-2026-004 #4）：release 9 步模板。
+- **pi-agent Phase 1 工作区骨架（v5）**：落地 `workspace.config.yaml`、`.pi/agents/team.md`、`team-entry` 扩展、`demands/template.md`、基础 `wiki/`、`JTBD/`、`scripts/`；适配 `subagent`、`jtbd-sync` 与 PRD/DoR skills，新增 `qa-checklist`、`ship-checklist`。设计依据：`docs/pi-agent-design-v5.md` §13 Phase 1。
+
 ### Changed
 - **清理根仓库忽略规则**：`pi-web` 与 `pi-fetch-tool` 已移出当前工作区维护范围，移除根 `.gitignore` 中对应子仓忽略项，避免保留过期目录约定。涉及：`.gitignore`。
 - **清理产品研发智能体方案文档**：移除 `docs/product-team-agent-plan.md` 中已迁移到 `mk-lab` wiki 的「7.1.1 mk-lab 项目仓库地图」段落，避免工作区方案文档重复维护业务仓库地图。涉及：`docs/product-team-agent-plan.md`。
+- **拉取 pi 上游并合并**（`earendil-works/pi` → `asiachrispy/pi`）：因直连 `git fetch upstream` 多次 early EOF，改由浅克隆 `upstream/main`（`12bb8dd`，v0.79.6）本地 deepen 后合并；合并提交 `262866b`，无冲突。上游主要增量：v0.79.4–v0.79.6（HTTP proxy 设置、Vercel AI Gateway attribution、provider 环境覆盖、fetch override 修复、DeepSeek/OpenCode 思考控制、模型目录更新等）。验证：`npm run check`（含 `tsgo --noEmit`）全绿；`vitest` 仍有 3 文件 7 例失败（`resource-loader`、`session-id-readonly`、`3592-no-builtin-tools`），与合并前基线一致、非本次引入。已推送 `origin/main`。
+- **`wiki/agent-reading-map.md`**：所有任务类型必读列加 `summary.md`；`depends_on` 加 `summary.md`；`## 总原则` 加 "先读 `wiki/summary.md`" 为第一条；路由表加 "发版"行指向 `.pi/protocols/release.md`。
+- **`.pi/agents/team.md`** 与 **`.pi/APPEND_SYSTEM.md`**：启动规则加 "**先读 `wiki/summary.md`**"，再读 `agent-reading-map.md`；决策点指向 `wiki/decisions/team-decisions.md`（按表自决，不询问）。
+- **修复 Pi.app `/team` 对话框展示整页 prompt**：新增 `team-entry` 扩展以 `registerCommand("team")` 拦截，会话只保留 `/team <args>` 短文本；执行协议迁至 `.pi/APPEND_SYSTEM.md`；移除会整页展开的 `.pi/prompts/team.md`；`pi-app` 对历史已展开消息做 UI 折叠。涉及：`.pi/extensions/team-entry/`、`scripts/setup-pi-entrypoints.sh`、`pi-app/lib/user-message-display.ts`。
+- **jtbd-sync 五项改进**：空 `[JTBD-UPDATE]` 块从 Pi 界面剥离；无变更时 `notify` 轻量反馈；制度注入收紧（完成 demand/实现时禁止空块）；解析 `workflow_update` 与 demand `blocked`/`done` 自动联动多人 JTBD；`before_agent_start` 自动创建个人 `JTBD/<user>-jtbd.md` 并变更后跑 `sync-jtbd-index.sh`。涉及：`.pi/extensions/jtbd-sync/index.ts`、`.pi/agents/team.md`。
+- **业务仓定为 `pi` + `pi-app`**：`workspace.config.yaml` 登记两仓 URL/别名；`wiki/project-map.md`、`project-overview.md`、`validation-rules.md` 写入引擎/产品边界与验证命令；`subagent` 项目解析改为 `pi` / `pi-app` / `pi-agent`；`bootstrap-workspace.sh` / `check-pi-env.sh` 校验两仓存在。
 - **更新 pi-web 移除后的维护说明**：`pi-web` 已不再作为独立仓库维护，历史共享 Web 层合并进 `pi-app`；根 `README.md` 与 `AGENTS.md` 改为 `pi` + `pi-app` 两条活跃主线，删除发布/打包前“先 pi-web 后 pi-app”的同步要求；新增 `docs/pi-app-unified-maintenance.md` 作为当前 SOP，并将旧 `pi-web` 合并、上移、冲突审计文档标记为历史档案。涉及：`README.md`、`AGENTS.md`、`docs/*`。
 - **拉取 pi 上游最新代码**：`pi` 引擎先快进到 `origin/main`（+28），再合并 `upstream/main`（earendil-works/pi，+17），共 4 处冲突——`packages/coding-agent/src/core/package-manager.ts` 与其测试因 fork 已将逻辑重构拆分到 `package-manager-npm.ts`/`package-manager-git.ts`/`package-source-parser.ts`（已含 upstream 的版本感知 `shouldUpdate` 等），保留 fork 版本；`packages/ai/CHANGELOG.md`、`packages/coding-agent/CHANGELOG.md` 合并双方 `[Unreleased]` 条目。合并后 `tsgo --noEmit` 通过、`package-manager` 单测 161 全过；其余既有失败（resource-loader flaky、session-id、3592 memory 特性、footer-debounce）经基线对比确认为合并前即存在、非本次引入。已推送 `origin/main`（`5a2b03eb`）。`pi-app` 本就最新，无需拉取。
 

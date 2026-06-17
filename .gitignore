@@ -2,8 +2,20 @@
 /pi/
 /pi-app/
 
+# 业务仓库（由 workspace.config.yaml 配置，clone 到工作区根下）
+/example-frontend/
+/example-backend/
+/mk-web-business/
+/mk-web-logistics/
+/mk-web-supplier/
+/mkerp/
+
 # 系统/编辑器
 .DS_Store
 *.log
 .idea/
 .vscode/
+
+# 发布产物
+/Pi-*.dmg
+*.dmg

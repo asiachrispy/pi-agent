@@ -2,7 +2,7 @@
 
 > 本文件是本工作区（pi-agent）自有的 agent 工作规范，不属于任何上游仓库（`pi` / `pi-app`），仅约束在本工作区内的协作行为。
 >
-> **当前状态**：`pi-web` 已移除，不再维护；此前共享 Web 层已经合并进 `pi-app`，后续 Web + 桌面统一在 `pi-app` 维护。
+> **当前状态**：`pi-app` 统一 Web + 桌面，不再有独立的 Web 层仓库。
 
 ## 打包 / 安装 / 发布前的上游同步（强制）
 
@@ -20,9 +20,9 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 
 执行要点：
 
-- 不再执行 `pi-web` 同步；`pi-web` 只作为历史仓库/历史文档名出现。
+- 不再有三仓同步；仅 `pi` + `pi-app` 两条主线。
 - 合并前若工作区有未提交改动，先提交或暂存，不在脏树上合并。
-- 合并若有冲突，按 README §5 的归属原则解决；对 `pi-app` 已成熟的 Web/桌面实现，不因历史 `pi-web` 形态而回退。
+- 合并若有冲突，按 README §5 的归属原则解决；对 `pi-app` 已成熟的 Web/桌面实现，不因历史形态而回退。
 - **合并后必须先验证再打包**：`tsc --noEmit` + `vitest run`（pi-app 还需 `swift build`/`swift test`）全绿后，才执行 `npm run package:macos`。
 - 各 fork 合并结果推送到 `origin/main` 后再打 tag / 发布；发布版本号与 tag 基于已同步上游的提交。
 - 若上游本次无更新（落后 0），记录“已确认最新”即可，无需空合并。

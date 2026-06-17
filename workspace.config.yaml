@@ -1,0 +1,35 @@
+# pi-agent 工作区配置（Source of Truth for scripts）
+# 业务仓库为独立 git 仓库，置于本目录下，由根 .gitignore 忽略。
+
+workspace:
+  name: pi-agent
+  wiki_dir: wiki
+  demands_dir: demands
+  jtbd_dir: JTBD
+
+repos:
+  - id: pi
+    path: pi
+    type: engine
+    aliases: [engine, cli, runtime, coding-agent]
+    url: https://github.com/asiachrispy/pi.git
+    upstream: https://github.com/earendil-works/pi.git
+  - id: pi-app
+    path: pi-app
+    type: app
+    aliases: [app, web, desktop, gui, next]
+    url: https://github.com/asiachrispy/pi-app.git
+
+pi:
+  prompts:
+    - team.md
+  extensions:
+    - subagent
+    - jtbd-sync
+
+demands:
+  id_prefix: D
+  counter_file: demands/.id-counter
+
+blocked:
+  digest_hours: 24
