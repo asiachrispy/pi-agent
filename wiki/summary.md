@@ -63,8 +63,10 @@ git push origin main && git tag vX.Y.Z && git push origin vX.Y.Z
 # 打包 + DMG + 冷烟（macOS）
 npm run package:macos
 hdiutil create -format UDZO -o Pi-X.Y.Z.dmg -srcfolder <staging>
-PORT=30142 Pi.app/Contents/Resources/node/bin/node Pi.app/Contents/Resources/pi-web/server.js &
-curl -fsS http://localhost:30142/{,/api/health,/api/sessions}
+export PORT=$(bash scripts/find-free-port.sh 30142) || { echo "ERROR: no free port found"; exit 1; }
+trap "kill $! 2>/dev/null" EXIT INT TERM
+Pi.app/Contents/Resources/node/bin/node Pi.app/Contents/Resources/pi-web/server.js &
+curl -fsS http://localhost:$PORT/{,/api/health,/api/sessions}
 
 # GitHub Release
 gh release create vX.Y.Z -R asiachrispy/pi-app Pi-X.Y.Z.dmg
@@ -72,7 +74,7 @@ gh release create vX.Y.Z -R asiachrispy/pi-app Pi-X.Y.Z.dmg
 
 ## 已知陷阱
 
-1. **冷烟端口 30141 是正式端口**：冷烟默认用 `PORT=30142`，不抢占正式端口；如被占用 `PORT+=1` 重试
+1. **冷烟端口**：默认 `scripts/find-free-port.sh 30142`（不抢占正式端口 30141）
 2. **拆 commit 并发 → lock + 误合并**：务必串行 `git add <files> && git commit`
 3. **`pi` CLI 不在 PATH**：用 `~/.pi/agent/bin/pi` shim 兜底
 4. **AGENTS.md 写 upstream 但仓库没配**：先 `git remote -v` 确认
