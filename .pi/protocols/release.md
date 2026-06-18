@@ -22,6 +22,17 @@ read_when:
 | demand frontmatter `requires_release: true` | ✅ |
 | 用户在 message 里说「发版」/「release」/「合并主分支」/「打 tag」 | ✅ |
 
+## 执行顺序
+
+步骤分为**本地**（不依赖网络）和**远程**（需 GitHub）。本地步骤可提前跑，不等 push。
+
+| 阶段 | 步骤 | 依赖 |
+|---|---|---|
+| 本地 | 1-4 拆 commit/verify/version + 7 package:macos + 8 DMG/cold-smoke | 无 |
+| 远程 | 5 push origin main → 6 push tag → 9 gh release | 1-4 先行 |
+
+**DMG + 冷烟不等 push**。网络不通时本地步骤全部跑完，push/tag/gh-release 网络恢复后补。
+
 ## 9 步标准流程
 
 | # | 步骤 | human_confirmation | 自动化内容 |
@@ -33,7 +44,7 @@ read_when:
 | 5 | `git push origin main` | ✅ **必需** | — |
 | 6 | `git tag vX.Y.Z` + `git push origin vX.Y.Z` | ✅ **必需** | — |
 | 7 | `npm run package:macos` | ❌ | 自动（验证通过后执行；若写入生产路径或覆盖已安装 App，另行确认） |
-| 8 | `hdiutil create -format UDZO` + 冷烟（动态端口） | ❌ | 体积基线 Pi.app ≤ 224M ± 5% / DMG ≈ 93M；冷烟 3 端点 200 |
+| 8 | `hdiutil create -format UDZO` + 冷烟 | ❌ | 冷烟端口用 `scripts/find-free-port.sh 30142`；体积基线 Pi.app ≤ 224M ± 5% / DMG ≈ 93M；冷烟 3 端点 200 |
 | 9 | `gh release create vX.Y.Z` + 根 `CHANGELOG.md` | ✅ **必需** | — |
 
 **3 步需 human_confirmation**（5/6/9 = push / tag / gh-release）。**1-4, 7-8 完全自动化**（基于 `validation-rules.md` 与本协议）。
@@ -62,7 +73,7 @@ release_scope: ["commit","verify","version","push","tag","package","dmg","cold_s
 | `weight: light` | 跳过 `qa-checklist` / `ship-checklist` 模板，只跑 `verify` + `cold_smoke` |
 | `merge-base(HEAD, upstream/main) == upstream/main HEAD` | **不 merge** |
 | `git fetch upstream` 失败 | 记 `blocking_reason: network/github.com:443 不通`；不擅自换协议（ssh vs https） |
-| 冷烟端口冲突 | 默认用 `PORT=30142`（不抢正式端口 30141），冲突时 `PORT += 1` 最多 5 次 |
+| 冷烟端口冲突 | `scripts/find-free-port.sh 30142`（不抢正式端口 30141），冲突时自动 +1 重试 |
 | 拆 commit 数 ≥ 2 | 串行执行 |
 | 同一 release 有多个 demand | 每个 demand 单独 commit，commit message 标 `Ref: D-xxx` |
 | DMG 体积超基线 + 20% | 警告 + blocked（让用户决策是否继续） |
