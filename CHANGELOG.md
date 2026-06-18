@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Removed
+- **自定义 subagent 扩展迁移至内置 pi-subagents skill**（pi-agent）：删除 `.pi/extensions/subagent/`（agents.ts + index.ts，1502 行），由 `~/.pi/agent/npm/node_modules/pi-subagents/` 内置 skill 接替。新 skill 支持 chain/parallel/async/forked-context 模式，功能完整覆盖旧扩展且无重复注册风险。commit `71ad588`。
+
 ### Fixed
 - **pi-app PR #10/#11 合并**：侧边栏/右栏可拖拽调整宽度（`usePanelResize`）；无 session 时打开工作区文件浏览器 403 问题修复（`recentWorkspaceCwds` + 默认工作区授权）；`/api/cwd/validate` 后立即失效 allowed-roots 缓存，避免刚打开目录仍 403。涉及：`pi-app` commit `929ec20`。
 - **对话区相对路径文件预览 Access denied**（pi-app）：`resolveFilePathForOpen` 将 `login` 等裸文件名按 session cwd 解析为绝对路径后再请求 `/api/files`。涉及：`pi-app` commit `81b8122`。
