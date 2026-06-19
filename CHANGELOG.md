@@ -33,6 +33,7 @@
 - **pi-agent Phase 1 工作区骨架（v5）**：落地 `workspace.config.yaml`、`.pi/agents/team.md`、`team-entry` 扩展、`demands/template.md`、基础 `wiki/`、`JTBD/`、`scripts/`；适配 `subagent`、`jtbd-sync` 与 PRD/DoR skills，新增 `qa-checklist`、`ship-checklist`。设计依据：`docs/pi-agent-design-v5.md` §13 Phase 1。
 
 ### Changed
+- **拉取并合并 pi 上游最新代码**（`earendil-works/pi` → `asiachrispy/pi`）：`pi` 合并 `upstream/main`（`ea65a51a`）生成 merge commit `ccc53618`；冲突集中在 README、各包 changelog、版本号/lockfile、AI 入口与模型生成文件。处理原则：保留 fork `0.79.9` 版本线与 fork 增量说明，同时合入上游新增的 base 入口、Mistral prompt caching、post-compaction token 估算、OpenRouter Fusion、自动主题/图片能力等条目；lockfile 与 `npm-shrinkwrap.json` 重新生成并通过 `npm run check:shrinkwrap`。`pi-app` 已 fetch upstream，确认 `upstream/main` 无新增（本地领先 205），未执行空合并；原有 3 个本地未提交改动已恢复。
 - **清理根仓库忽略规则**：`pi-web` 与 `pi-fetch-tool` 已移出当前工作区维护范围，移除根 `.gitignore` 中对应子仓忽略项，避免保留过期目录约定。涉及：`.gitignore`。
 - **清理产品研发智能体方案文档**：移除 `docs/product-team-agent-plan.md` 中已迁移到 `mk-lab` wiki 的「7.1.1 mk-lab 项目仓库地图」段落，避免工作区方案文档重复维护业务仓库地图。涉及：`docs/product-team-agent-plan.md`。
 - **拉取 pi 上游并合并**（`earendil-works/pi` → `asiachrispy/pi`）：因直连 `git fetch upstream` 多次 early EOF，改由浅克隆 `upstream/main`（`12bb8dd`，v0.79.6）本地 deepen 后合并；合并提交 `262866b`，无冲突。上游主要增量：v0.79.4–v0.79.6（HTTP proxy 设置、Vercel AI Gateway attribution、provider 环境覆盖、fetch override 修复、DeepSeek/OpenCode 思考控制、模型目录更新等）。验证：`npm run check`（含 `tsgo --noEmit`）全绿；`vitest` 仍有 3 文件 7 例失败（`resource-loader`、`session-id-readonly`、`3592-no-builtin-tools`），与合并前基线一致、非本次引入。已推送 `origin/main`。
