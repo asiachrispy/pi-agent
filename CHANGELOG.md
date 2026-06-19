@@ -12,6 +12,7 @@
 - **自定义 subagent 扩展迁移至内置 pi-subagents skill**（pi-agent）：删除 `.pi/extensions/subagent/`（agents.ts + index.ts，1502 行），由 `~/.pi/agent/npm/node_modules/pi-subagents/` 内置 skill 接替。新 skill 支持 chain/parallel/async/forked-context 模式，功能完整覆盖旧扩展且无重复注册风险。commit `71ad588`。
 
 ### Fixed
+- **侧边栏切换项目后资源管理器仍列旧目录**（pi-app）：`FileExplorer` 的 `cwd` 优先级与 `filterCwd` 不一致（`selectedCwdProp ?? selectedCwd`），用户选新项目后仍请求 `activeCwd` 导致「未找到文件」。改为 `selectedCwd ?? selectedCwdProp`。涉及：`pi-app` commit `ece1155`。
 - **pi-app PR #10/#11 合并**：侧边栏/右栏可拖拽调整宽度（`usePanelResize`）；无 session 时打开工作区文件浏览器 403 问题修复（`recentWorkspaceCwds` + 默认工作区授权）；`/api/cwd/validate` 后立即失效 allowed-roots 缓存，避免刚打开目录仍 403。涉及：`pi-app` commit `929ec20`。
 - **对话区相对路径文件预览 Access denied**（pi-app）：`resolveFilePathForOpen` 将 `login` 等裸文件名按 session cwd 解析为绝对路径后再请求 `/api/files`。涉及：`pi-app` commit `81b8122`。
 - **subagent 误要求 API key**（pi-agent）：未配置 model 的 agent 继承父会话 `ctx.model` 的 `--provider`/`--model`，不再单独弹 Anthropic key。涉及：`.pi/extensions/subagent/index.ts` commit `262a191`。
