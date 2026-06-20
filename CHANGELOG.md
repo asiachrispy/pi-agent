@@ -8,9 +8,12 @@
 
 ## [Unreleased]
 
+## [0.8.11] - 2026-06-20
+
 ### Changed
 - **执行上游/远端同步约定**（pi / pi-app）：`pi` fetch `origin` + `upstream` 后确认 `upstream/main` 无新增，保持 `main == origin/main`；`pi-app` fetch `origin` + `upstream` 后确认 `upstream/main` 无新增，并合并 `origin/main` 的 PR #7（`refactor/extract-pi-app-only-logic`），将 `AppShell` / `ChatInput` 中的 pi-app 专属逻辑抽到 `hooks/useTerminalPanel` 与 `lib/chat-input-tool-presets`，新增对应单测。
 - **补齐 pi-app v0.8.10 lockfile 版本**（pi-app）：合并前按脏树约定先提交 `package-lock.json` 版本号同步（`0.8.9` → `0.8.10`），避免在未提交改动上执行远端合并。
+- **发布 pi-app v0.8.11**（pi-app）：本机按用户确认的环境策略以 `swift build` 作为 macOS 原生侧验证，不在缺完整 Xcode/XCTest 的机器上执行 `swift test`；重新打包 Next standalone `Pi.app` 并发布 DMG。
 
 ## [0.8.10] - 2026-06-20
 
