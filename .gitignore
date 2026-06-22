@@ -10,6 +10,9 @@
 /mk-web-supplier/
 /mkerp/
 
+# 依赖
+/node_modules/
+
 # 系统/编辑器
 .DS_Store
 *.log
