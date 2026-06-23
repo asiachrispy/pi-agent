@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Added
+- **新增 Pi.Agent Web 腾讯云部署方案文档**：记录 `pi.gottao.com` 在腾讯云 `43.138.130.199` 的部署架构、systemd/Nginx 配置、环境变量、数据目录、安全边界、验证和运维步骤，作为大陆用户开放试用环境的操作参考。涉及：`docs/piweb-install-tencent.md`。
+
 ### Changed
 - **拉取上游/远端最新并同步**（pi / pi-app）：
   - `pi`：fetch 后先快进 `origin/main`（+92），再合并 `upstream/main`（earendil-works/pi，+14）。本次仅 `packages/tui/CHANGELOG.md` 一处冲突（fork 的 `@livos` republish 与 upstream 的 Markdown 代码栅栏修复在 `[0.79.9]` 版本号撞车）→ 采用 upstream 版本号/日期并并入 fork 的 republish 说明。合并把 `@mistralai/mistralai` 从 2.2.1 升至 2.2.6（新增 `promptCacheKey`），需 `npm install` 同步 node_modules 后 `tsgo` 才通过；合并提交 `968fca64` 已推送 `origin/main`，与 upstream/origin 均同步。
