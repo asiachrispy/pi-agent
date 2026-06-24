@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 ### Added
+- **Livo SSO 直登与受控接入方案**：`pi.gottao.com/` 保持产品介绍页，工作台入口固定为 `pi.gottao.com/app/`；Livo 用户通过一次性 SSO ticket 登录 Pi Web，Pi 设置自有 `pi_livo_session` HttpOnly cookie，并按 Livo userId 隔离 workspace/session。新增 ADR `wiki/adr/0001-livo-sso-ticket-auth.md`，更新 `docs/piweb-install-tencent.md` 记录 199 服务器环境变量、Nginx `/app` 代理、匿名 API 401、外站 returnTo 400 等上线验收结果。
 - **新增 Pi.Agent Web 腾讯云部署方案文档**：记录 `pi.gottao.com` 在腾讯云 `43.138.130.199` 的部署架构、systemd/Nginx 配置、环境变量、数据目录、安全边界、验证和运维步骤，作为大陆用户开放试用环境的操作参考。涉及：`docs/piweb-install-tencent.md`。
 
 ### Fixed

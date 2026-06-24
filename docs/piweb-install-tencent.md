@@ -4,14 +4,14 @@
 
 Pi.Agent Web 当前部署在腾讯云服务器 `43.138.130.199`，面向大陆用户通过 `https://pi.gottao.com` 直接访问使用。此前试装到 `175.178.172.24` 的实例已卸载，当前以 199 服务器为准。
 
-这次定位建议是 **大陆用户开放试用 / 顾问演示 / 单企业试点环境**，暂时不增加额外访问权限、不做 Basic Auth、不做 IP 白名单，让用户打开域名即可使用。需要明确的是：Pi.Agent Web 不是普通展示站，它能读会话、读文件、发起 Agent 工具调用。开放访问可以降低试用门槛，但必须把数据目录、运行用户、备份、日志和密钥隔离做好，避免把真实生产资料直接暴露到公网。
+这次定位建议是 **Livo 授权后的受控试用 / 顾问演示 / 单企业试点环境**。2026-06-24 起，`pi.gottao.com` 已从匿名 mutation 切换为 Bearer token 保护：用户可打开页面查看入口，但 Livo 集成相关写入 API 必须由 Livo 后端持 `PI_WEB_REMOTE_TOKEN` 调用。需要明确的是：Pi.Agent Web 不是普通展示站，它能读会话、读文件、发起 Agent 工具调用。开放页面可以降低试用门槛，但必须把数据目录、运行用户、备份、日志和密钥隔离做好，避免把真实生产资料直接暴露到公网。
 
 ## 服务器目标
 
 - 目标公网 IP：`43.138.130.199`
 - 登录用户：`ubuntu`
 - 面向用户：中国大陆用户
-- 访问策略：先开放直接访问，不增加额外访问权限
+- 访问策略：页面开放访问；API mutation 使用 `PI_WEB_REMOTE_TOKEN` 受控访问
 - 访问域名：`pi.gottao.com`
 
 执行前先确认：
@@ -79,6 +79,127 @@ sudo chown -R piagent:piagent /data/pi-agent /var/log/pi-agent
 注意：应用代码目录 `/opt/pi-agent` 不应整体改成可写。`/api/default-cwd` 会基于 Node 的 `os.homedir()` 创建 `pi-cwd-YYYYMMDD` 工作区，所以 systemd 必须显式设置 `HOME=/data/pi-agent/workspaces`，否则服务用户可能尝试写入 `/opt/pi-agent/pi-cwd-*` 并触发 `EACCES`。
 
 ## 环境变量
+
+### Livo 受控接入
+
+接入 Livo 后不要再使用匿名公网写入。199 应改为 Livo 后端持有 Bearer token 调用，浏览器前端不接触 token：
+
+```bash
+NODE_ENV=production
+PORT=30141
+HOSTNAME=127.0.0.1
+PI_CODING_AGENT_DIR=/data/pi-agent
+HOME=/data/pi-agent/workspaces
+PI_WEB_REMOTE=1
+PI_WEB_REMOTE_TOKEN=<strong-server-token>
+PI_WEB_LIVO_WORKSPACE_ROOT=/data/pi-agent/workspaces/livo
+PI_WEB_TERMINAL_DISABLED=1
+```
+
+确认不要设置：
+
+```bash
+PI_WEB_ALLOW_REMOTE_MUTATIONS=1
+```
+
+### Livo SSO 直登
+
+用户直接访问 `https://pi.gottao.com/app` 工作台时，使用 Livo SSO ticket 登录 Pi Web。`https://pi.gottao.com/` 保持产品介绍页。Pi 不保存 Livo JWT，只设置自己的 `pi_livo_session` HttpOnly cookie。
+
+Pi Web 需要新增：
+
+```bash
+PI_LIVO_SSO_ENABLED=1
+PI_LIVO_BASE_URL=https://livo.gottao.com/livoApi/livoAgent
+PI_LIVO_WEB_LOGIN_URL=https://livo.gottao.com/auth/login
+PI_LIVO_SSO_VERIFY_TOKEN=<same-as-livo-backend-PI_SSO_VERIFY_TOKEN>
+PI_LIVO_SESSION_SECRET=<new-random-secret-min-32-bytes>
+PI_PUBLIC_ORIGIN=https://pi.gottao.com
+PI_WEB_LIVO_WORKSPACE_ROOT=/data/pi-agent/workspaces/livo
+```
+
+Livo Backend 需要新增：
+
+```bash
+PI_SSO_VERIFY_TOKEN=<same-as-pi-PI_LIVO_SSO_VERIFY_TOKEN>
+PI_SSO_ALLOWED_PI_ORIGIN=https://pi.gottao.com
+PI_SSO_TICKET_TTL_SECONDS=120
+```
+
+验收：
+
+```bash
+curl -i https://pi.gottao.com/api/livo/sso/start?returnTo=/app/
+curl -i https://pi.gottao.com/api/livo/me
+```
+
+预期：
+
+- `/api/livo/sso/start` 返回 307，`Location` 指向 Livo 登录页并带 `/pi-sso?returnTo=...`。
+- 未带 `pi_livo_session` 时 `/api/livo/me` 返回 401。
+- 浏览器完成 Livo 登录后，Pi callback 设置 `pi_livo_session`，随后 `/api/livo/me` 返回当前 Livo 用户。
+- 用户只能看到自己 `/data/pi-agent/workspaces/livo/users/{userId}` 下的 session。
+
+验收：
+
+```bash
+curl -i https://pi.gottao.com/api/sessions
+curl -i -X POST https://pi.gottao.com/api/agent/new \
+  -H 'Content-Type: application/json' \
+  -d '{"cwd":"/tmp","type":"prompt","message":"probe"}'
+```
+
+以上匿名请求应返回 `401` 或 `403`，不能返回 session 列表或创建 agent。
+
+### 当前 199 验收结果
+
+2026-06-24 已上线 Livo 受控接入：
+
+- `PI_WEB_REMOTE=1`
+- `PI_WEB_REMOTE_TOKEN=<rotated-server-token>`
+- `PI_WEB_LIVO_WORKSPACE_ROOT=/data/pi-agent/workspaces/livo`
+- `PI_WEB_TERMINAL_DISABLED=1`
+- 已移除 `PI_WEB_ALLOW_REMOTE_MUTATIONS=1`
+
+验收结果：
+
+```text
+匿名 GET /api/sessions -> 401
+匿名 POST /api/livo/workspace -> 401
+Bearer POST /api/livo/workspace -> 200
+Livo POST /pi-agent/tasks -> 200
+Pi session URL https://pi.gottao.com/app/?session=<id> -> SSO 后打开
+```
+
+2026-06-24 已上线 Livo SSO 直登：
+
+- `PI_LIVO_SSO_ENABLED=1`
+- `PI_LIVO_BASE_URL=https://livo.gottao.com/livoApi/livoAgent`
+- `PI_LIVO_WEB_LOGIN_URL=https://livo.gottao.com/auth/login`
+- `PI_LIVO_SSO_VERIFY_TOKEN=<configured>`
+- `PI_LIVO_SESSION_SECRET=<configured>`
+- `PI_PUBLIC_ORIGIN=https://pi.gottao.com`
+- `PI_WEB_ALLOW_REMOTE_MUTATIONS` 已移除
+- Nginx `pi.gottao.com/` 根路径保持 `/var/www/pi-gottao` 产品介绍页
+- Nginx `/app` 保留 query 重定向到 `/app/`
+- Nginx `/app/` 反代到 `127.0.0.1:30141`，并设置 `X-Pi-Workbench-Entry: /app`
+
+验收结果：
+
+```text
+GET / -> 200 产品介绍页
+GET /app?session=probe -> 301 /app/?session=probe
+GET /app/?session=probe -> 307 /api/livo/sso/start?returnTo=%2Fapp%2F%3Fsession%3Dprobe
+curl -L /app/ -> https://livo.gottao.com/auth/login?redirect=...
+GET /api/livo/sso/start?returnTo=/?session=legacy -> 307 Livo 登录，returnTo 归一化为 /app/?session=legacy
+GET /api/livo/me without cookie -> 401
+GET /api/sessions without cookie -> 401
+POST /api/livo/workspace without token -> 401
+GET /api/livo/sso/start?returnTo=https://evil.example/ -> 400
+GET /api/livo/sso/callback?ticket=invalid -> 401
+```
+
+### 旧开放试用配置
 
 因为本阶段要求“用户可以直接访问使用”，需要显式打开远程公开访问：
 
@@ -331,7 +452,7 @@ curl -I https://pi.gottao.com/
 curl -i https://pi.gottao.com/api/remote/client
 ```
 
-开放访问能力：
+受控访问能力：
 
 ```bash
 curl -i https://pi.gottao.com/api/sessions
@@ -345,7 +466,7 @@ curl -i -X POST https://pi.gottao.com/api/default-cwd
 - 公网 `/api/health` 返回 403 是预期行为；该接口是 loopback-only 健康检查，不作为浏览器连通性验收。
 - 公网 `/api/remote/client` 200。
 - 公网 `/api/terminal/*` 403。开放试用环境不允许浏览器终端执行命令。
-- `/api/sessions` 在不带 token 的情况下可返回业务响应，而不是 401/403。
+- `/api/sessions` 在不带 Pi/Livo 登录态或 server token 的情况下必须返回 401/403。
 - `/api/default-cwd` 返回 `/data/pi-agent/workspaces/pi-cwd-YYYYMMDD`，不得返回 `/opt/pi-agent/pi-cwd-*`。
 - 浏览器能创建会话、发送消息，并看到 SSE 流式输出。
 - `/data/pi-agent/sessions` 中出现新会话数据。
