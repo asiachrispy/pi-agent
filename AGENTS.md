@@ -43,6 +43,16 @@ cd pi-app  && git fetch upstream && git merge upstream/main && git push origin m
 - 发布前务必冷烟验证：用 bundle 内嵌 Node 跑 `server.js`，确认 `/`、`/api/health`、`/api/sessions` 均 200。
 - npm 包内容不受 standalone 影响（`npx pi-app` 走 `next start` 回退分支）；如需同步发 npm，另行 `npm publish --access public`。
 
+## Livo 集成与本地部署（强制）
+
+Livo 相关能力是 `pi-app` 的可选集成，**不得默认影响本地部署/本地使用**。
+
+- 本地普通部署不得设置 `PI_LIVO_SSO_ENABLED=1`；未显式开启时，`/`、`/app`、本地 API 与桌面 bundle 必须按原本本地模式工作，不跳转 Livo SSO。
+- 本地部署默认不需要配置 `PI_LIVO_*` 或 `PI_WEB_LIVO_WORKSPACE_ROOT`。只有部署到 Livo 工作台/会议场景时，才配置 `PI_LIVO_SESSION_SECRET`、`PI_LIVO_SSO_VERIFY_TOKEN`、`PI_LIVO_BASE_URL`、`PI_LIVO_WEB_LOGIN_URL`、`PI_WEB_LIVO_WORKSPACE_ROOT` 等变量。
+- 若本地调试时曾打开过 Livo SSO，切回普通本地模式前需清理浏览器 `pi_livo_session` cookie，避免误走 Livo 会话分支。
+- `pi-app` 当前通过 npm alias 使用 `@livos/pi-*` fork 包（import 名仍是 `@earendil-works/*`）。离线部署、私有 npm 源或镜像环境必须同步 `@livos` scope 包；否则安装阶段会失败。
+- 新增或修改 Livo 功能时，必须确认未设置 `PI_LIVO_SSO_ENABLED=1` 的本地路径仍可启动、访问 `/`/`/app`，并保持 `/api/health`、`/api/sessions` 等本地冷烟接口可用。
+
 ## 测试数据清理（强制）
 
 在本工作区运行测试（如 `pi` 各 package 的单测、RPC/会话相关用例）后，**必须清理测试过程产生的临时会话数据**，不得遗留、不得展示给用户。

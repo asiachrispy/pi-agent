@@ -13,7 +13,9 @@
 - **新增 Pi.Agent Web 腾讯云部署方案文档**：记录 `pi.gottao.com` 在腾讯云 `43.138.130.199` 的部署架构、systemd/Nginx 配置、环境变量、数据目录、安全边界、验证和运维步骤，作为大陆用户开放试用环境的操作参考。涉及：`docs/piweb-install-tencent.md`。
 
 ### Fixed
+- **Livo SSO 跨用户会话隔离**（pi-app）：补齐 `/api/history`、`/api/history/[id]`、`/api/usage`、`/api/product-sessions/[id]` 以及 agent/context/export 等 session id 入口的 Livo userId workspace 过滤与拒绝校验，避免从 Livo 跳转到 Pi 后看到或访问其它用户会话记录。
 - **修复 pi.gottao.com `/app/` 子路径导航**（pi-app）：`AppShell` 内部导航改为保留当前 pathname，解决设置、首页、新建对话从 `https://pi.gottao.com/app/` 跳到站点根路径的问题；已部署到腾讯云 release `pi-app-runtime-0.8.12-subpath-nav-20260624-064555`。
+- **右侧阅览区导出按钮文案**（pi-app）：将预览图片导出操作的「保存」文案调整为「下载」，中英文界面同步更新。
 
 ### Changed
 - **拉取上游/远端最新并同步**（pi / pi-app）：
