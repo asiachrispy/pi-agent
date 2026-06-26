@@ -116,6 +116,17 @@ PI_LIVO_SSO_VERIFY_TOKEN=<same-as-livo-backend-PI_SSO_VERIFY_TOKEN>
 PI_LIVO_SESSION_SECRET=<new-random-secret-min-32-bytes>
 PI_PUBLIC_ORIGIN=https://pi.gottao.com
 PI_WEB_LIVO_WORKSPACE_ROOT=/data/pi-agent/workspaces/livo
+# Livo 登录后会话 store（复用同机 Redis db=3，不新装实例）
+PI_SESSION_STORE_KIND=redis
+PI_SESSION_STORE_URL=redis://127.0.0.1:6379/3
+PI_SESSION_STORE_PREFIX=pi:session:
+PI_SESSION_STORE_DUAL_WRITE=1
+PI_SESSION_STORE_PASSWORD=<same-as-livo-backend-REDIS_PASSWORD>
+PI_INTERNAL_VERIFY_TOKEN=<random-secret-for-edge-loopback-verify>
+# 可选：租户 soft budget（USD，warn-only，不拦截 prompt）
+PI_LIVO_TENANT_BUDGET_USD=100
+# 可选：Livo Backend 就绪并执行 token_usage migration 后开启 usage 回调
+# PI_LIVO_USAGE_CALLBACK_ENABLED=1
 ```
 
 Livo Backend 需要新增：
@@ -124,7 +135,34 @@ Livo Backend 需要新增：
 PI_SSO_VERIFY_TOKEN=<same-as-pi-PI_LIVO_SSO_VERIFY_TOKEN>
 PI_SSO_ALLOWED_PI_ORIGIN=https://pi.gottao.com
 PI_SSO_TICKET_TTL_SECONDS=120
+# PI_AGENT_REMOTE_TOKEN 与 Pi PI_WEB_REMOTE_TOKEN 同值（已有，usage 回调复用）
 ```
+
+**Supabase migration（usage 回调前置）**：在 Livo Supabase 执行 `livo-backend/supabase/migrations/20260627000001_token_usage.sql`，创建 `token_usage` 表。
+
+验收 usage 回调（migration + 后端部署后）：
+
+```bash
+curl -i -X POST 'https://livo.gottao.com/livoApi/livoAgent/pi-agent/callbacks/usage' \
+  -H 'Authorization: Bearer <PI_WEB_REMOTE_TOKEN>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "userId": "test-user",
+    "piSessionId": "test-session",
+    "model": "gpt-4",
+    "provider": "openai",
+    "inputTokens": 10,
+    "outputTokens": 5,
+    "cacheReadTokens": 0,
+    "cacheWriteTokens": 0,
+    "totalCost": 0.02,
+    "recordedAt": "2026-06-27T00:00:00.000Z"
+  }'
+```
+
+预期：`200`，`{"code":200,"data":{"id":...,"duplicate":false}}`；重复 POST 同 `recordedAt` 时 `duplicate: true`。
+
+Pi 侧开启：设 `PI_LIVO_USAGE_CALLBACK_ENABLED=1`（与 `PI_LIVO_BASE_URL` / `PI_WEB_REMOTE_TOKEN` 配套）。
 
 验收：
 

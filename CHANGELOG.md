@@ -9,6 +9,13 @@
 ## [Unreleased]
 
 ### Added
+- **Livo M2 #11c Remote cookie store**（pi-app）：`hasValidRemoteSessionWithStore`；internal verify 支持 `?kind=remote`；middleware 不再盲放行 `pi_web_session`（#11d）。
+- **Livo M4 预算 warn-only + usage 回调**（pi-app + livo-backend）：Pi `notifyLivoTokenUsage` → Livo `POST /pi-agent/callbacks/usage` 落 Supabase `token_usage`（`PI_LIVO_USAGE_CALLBACK_ENABLED` 默认关）。
+- **Livo M3 token usage ledger**（pi-app）：`recordUsageFromAssistantMessage` 挂 `rpc-manager` `message_end`；租户 `token-usage.jsonl` 增量记账；`/api/usage` 与 session 扫描去重合并。
+- **Livo M2 internal session verify + SSO 单层**（pi-app）：`GET /api/internal/session/exists`（loopback + `PI_INTERNAL_VERIFY_TOKEN`）；middleware #11b `hasValidLivoSessionWithStore`；#10 `page.tsx` 在 internal verify 启用时不再 redirect store。
+- **Livo M1 Redis SessionStore**（pi-app）：`redis` 依赖 + `RedisLivoSessionStore`（进程内缓存 + 异步持久化）；`PI_SESSION_STORE_DUAL_WRITE` 双写；`PI_SESSION_STORE_KIND=redis` 读切 Redis；启动 `instrumentation` warm + 从 JSON 导入缺失会话；deploy 脚本写入 `PI_SESSION_STORE_*`。
+- **Livo M0：SessionStore 抽象 + middleware Bearer 收紧 + 审计扩展**（pi-app）：`lib/auth/session-store.ts`（`FileLivoSessionStore`）；middleware #11a 移除 Bearer 盲放行；`RemoteAuditEvent` 增加 `tenantId`/`principalKind`，挂点覆盖 Livo logout、SSO callback、global-config 403。
+- **Livo #9–#12 架构定稿**（docs）：`docs/livo-integration-todo.md` 补充方案 A/B/C 对比与已确认决策——会话复用现有 Redis（db=3）、Edge 走 internal verify、计量分阶段 jsonl→Livo 写 Supabase，Pi 不直连 PG。
 - **Livo 集成优化代办清单**（pi-app）：新增 `docs/livo-integration-todo.md`，基于 code-simplifier 审查与方案二设计文档整理 P0–P3 任务并逐项落地。
 - **Livo 统一配置与路径工具**（pi-app）：新增 `lib/livo/config.ts`（`resolveLivoWorkspaceRoot` / SSO 开关）、`lib/livo/path-utils.ts`（`pathBelongsToRoot`）、`lib/auth-decision.ts`（middleware 认证决策纯函数）。
 - **工作台路径收口与 AuthPrincipal**（pi-app）：新增 `lib/livo/workbench.ts`（`PI_WORKBENCH_BASE_PATH` / `buildSsoStartUrl`）、`lib/auth/principal.ts`、`lib/request-auth-common.ts`、`lib/livo/route-coverage.ts`；ADR `wiki/adr/0002-edge-node-auth-layers.md` 记录 Edge/Node 两层 SSO 与 API auth 契约。
