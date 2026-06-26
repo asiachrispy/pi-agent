@@ -21,6 +21,7 @@
 - **工作台路径收口与 AuthPrincipal**（pi-app）：新增 `lib/livo/workbench.ts`（`PI_WORKBENCH_BASE_PATH` / `buildSsoStartUrl`）、`lib/auth/principal.ts`、`lib/request-auth-common.ts`、`lib/livo/route-coverage.ts`；ADR `wiki/adr/0002-edge-node-auth-layers.md` 记录 Edge/Node 两层 SSO 与 API auth 契约。
 
 ### Fixed
+- **Livo 会议搜索任务**（livo-backend + pi-app）：派发启用 `bash` 全工具集 + prompt 强制 pi-search-hub 检索；工作区 AGENTS.md 补充联网搜索规范。
 - **Livo SSO store 失效丢 deep link**（pi-app）：`app/page.tsx` 重定向 SSO 时保留原始 query（`?session=` / `?workspace=`），不再硬编码 `returnTo=/app/`。
 - **Livo 多租户 preferences/scene/skills 隔离**（pi-app）：存储层改用 `currentAgentDir()`；`preferences`、`scene-overrides/*`、`skills` 等 route 套 `withTenant`；`global-config-guard` 收窄为仅拦截全局模型配置写，租户可读写各自 agentDir 下的偏好与场景。
 - **Livo workspace root 默认值分裂**（pi-app）：SSO cwd 校验与 S2S workspace/summary 路由统一走 `resolveLivoWorkspaceRoot()`，消除 `/data/pi-agent/...` 与 `~/livo` 不一致。
