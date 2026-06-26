@@ -9,6 +9,19 @@
 ## [Unreleased]
 
 ### Added
+- **Livo 集成优化代办清单**（pi-app）：新增 `docs/livo-integration-todo.md`，基于 code-simplifier 审查与方案二设计文档整理 P0–P3 任务并逐项落地。
+- **Livo 统一配置与路径工具**（pi-app）：新增 `lib/livo/config.ts`（`resolveLivoWorkspaceRoot` / SSO 开关）、`lib/livo/path-utils.ts`（`pathBelongsToRoot`）、`lib/auth-decision.ts`（middleware 认证决策纯函数）。
+- **工作台路径收口与 AuthPrincipal**（pi-app）：新增 `lib/livo/workbench.ts`（`PI_WORKBENCH_BASE_PATH` / `buildSsoStartUrl`）、`lib/auth/principal.ts`、`lib/request-auth-common.ts`、`lib/livo/route-coverage.ts`；ADR `wiki/adr/0002-edge-node-auth-layers.md` 记录 Edge/Node 两层 SSO 与 API auth 契约。
+
+### Fixed
+- **Livo SSO store 失效丢 deep link**（pi-app）：`app/page.tsx` 重定向 SSO 时保留原始 query（`?session=` / `?workspace=`），不再硬编码 `returnTo=/app/`。
+- **Livo 多租户 preferences/scene/skills 隔离**（pi-app）：存储层改用 `currentAgentDir()`；`preferences`、`scene-overrides/*`、`skills` 等 route 套 `withTenant`；`global-config-guard` 收窄为仅拦截全局模型配置写，租户可读写各自 agentDir 下的偏好与场景。
+- **Livo workspace root 默认值分裂**（pi-app）：SSO cwd 校验与 S2S workspace/summary 路由统一走 `resolveLivoWorkspaceRoot()`，消除 `/data/pi-agent/...` 与 `~/livo` 不一致。
+- **Livo 租户默认插件路径**（pi-app）：`createAgentResourceLoader` 向 `defaultLivoPluginPaths(agentDir)` 传入租户目录。
+- **Livo 侧边栏路径展示**（pi-app）：`formatLivoWorkspacePath` 基于 env 工作区根而非硬编码正则。
+
+### Changed
+- **API 鉴权统一身份模型**（pi-app）：`requireApiAuth` 返回 `AuthPrincipal`；`withTenant` 从 `resolveLivoPrincipal` 注入租户上下文；删除未使用的 `authorizeRequestEdge`；约 35 条 API route 改用 `isAuthError` 守卫。
 - **Livo SSO 直登与受控接入方案**：`pi.gottao.com/` 保持产品介绍页，工作台入口固定为 `pi.gottao.com/app/`；Livo 用户通过一次性 SSO ticket 登录 Pi Web，Pi 设置自有 `pi_livo_session` HttpOnly cookie，并按 Livo userId 隔离 workspace/session。新增 ADR `wiki/adr/0001-livo-sso-ticket-auth.md`，更新 `docs/piweb-install-tencent.md` 记录 199 服务器环境变量、Nginx `/app` 代理、匿名 API 401、外站 returnTo 400 等上线验收结果。
 - **新增 Pi.Agent Web 腾讯云部署方案文档**：记录 `pi.gottao.com` 在腾讯云 `43.138.130.199` 的部署架构、systemd/Nginx 配置、环境变量、数据目录、安全边界、验证和运维步骤，作为大陆用户开放试用环境的操作参考。涉及：`docs/piweb-install-tencent.md`。
 
