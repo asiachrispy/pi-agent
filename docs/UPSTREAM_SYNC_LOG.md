@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-06-24 — pi v0.80.2（D-2026-010）
+
+| 项目 | 值 |
+|------|-----|
+| 仓库 | `asiachrispy/pi` ← `earendil-works/pi` |
+| commit 范围 | `2be6e670..927e9806`（tags: v0.80.1, v0.80.2） |
+| 合并 commits | ~20 个 |
+| 冲突文件 | 19 个（全部版本号/CHANGELOG/lockfile/publish.mjs） |
+| push | ✅ `1509fd39d..7640c5683` |
+
+### 主要内容
+
+- **feat**: external editor 设置、installer lock、`get_entries`/`get_tree` RPC、orchestrator（实验性）
+- **fix**: compaction 回归、interactive 状态指示器、provider error passthrough、Z.AI thinking、Codex SSE timeout
+- **release**: v0.80.1、v0.80.2
+
+### 冲突解决
+
+全部采纳上游（版本号跟进、CHANGELOG 更新、lockfile 同步）。
+
+---
+
 ## 2026-06-23 — pi v0.80.0（D-2026-009）
 
 | 项目 | 值 |
