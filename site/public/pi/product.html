@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pi.Agent · 企业知识库与智能体工作台 | 统一知识、统一调度、统一沉淀</title>
+  <meta name="description" content="Pi.Agent 面向 10–50 人企业团队：统一知识库、智能体工作台、Livo SSO 登录与会议待办一键派发，让每个岗位都能基于真实企业资料调用 AI。" />
+  <meta property="og:title" content="Pi.Agent · 企业知识库与智能体工作台" />
+  <meta property="og:description" content="把企业知识变成每个岗位都能调用的 AI 工作入口 — Livo SSO、会议待办派发、知识库 RAG、Agent 任务可追溯。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pi.gottao.com/" />
+  <meta property="og:image" content="https://www.gottao.com/pi-logo.png" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.gottao.com/pi-logo.png" />
+  <link rel="canonical" href="https://pi.gottao.com/" />
+  <link rel="icon" href="https://www.gottao.com/pi-logo.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Pi.Agent",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "url": "https://pi.gottao.com/",
+    "description": "Pi.Agent 是面向企业全员的知识库与智能体工作台，把企业知识变成每个岗位都能调用的 AI 工作入口。",
+    "publisher": { "@type": "Organization", "name": "Gottao 近道咨询", "url": "https://www.gottao.com/" },
+    "offers": { "@type": "Offer", "availability": "https://schema.org/InStock", "priceCurrency": "CNY" },
+    "inLanguage": "zh-CN"
+  }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['ui-sans-serif', 'system-ui', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Arial', 'sans-serif'] },
+          colors: {
+            primary: {
+              50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+              400: '#a78bfa', 500: '#805AD5', 600: '#834CD6', 700: '#7c3aed',
+              800: '#6B46C1', 900: '#5b21b6',
+            },
+            ink: '#111827',
+            livoPink: '#B935D9',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: ui-sans-serif, system-ui, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; }
+    .hero-grad { background: linear-gradient(283.01deg, #834CD6 8.03%, #9546E2 34.85%, #B935D9 100%); }
+    .hero-glow { background-image: radial-gradient(circle at 18% 26%, rgba(255,255,255,.14), transparent 32%), radial-gradient(circle at 84% 18%, rgba(255,255,255,.10), transparent 30%), radial-gradient(circle at 48% 86%, rgba(255,255,255,.08), transparent 34%); }
+    .section-soft { background: linear-gradient(135deg,#f8fbff 0%,#faf7ff 48%,#fff8fb 100%); }
+    .text-grad { background: linear-gradient(90deg,#7c3aed,#B935D9); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .brand-mark { background: linear-gradient(135deg,#834CD6,#B935D9); box-shadow: 0 10px 24px -12px rgba(131,76,214,.7); }
+    .brand-logo { box-shadow: 0 10px 24px -12px rgba(131,76,214,.7); }
+    .card-hover { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 22px 55px -30px rgba(91,33,182,.45); border-color: #ddd6fe; }
+    .pill-soft { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); }
+    .focus-ring:focus-visible { outline: 3px solid rgba(128,90,213,.32); outline-offset: 3px; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .gi { fill: none; stroke: currentColor; stroke-width: 1.6px; stroke-linecap: round; stroke-linejoin: round; }
+    details summary { cursor: pointer; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal, .card-hover { transition: none; transform: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body class="text-ink antialiased bg-white">
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-book" viewBox="0 0 24 24"><path class="gi" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path class="gi" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+      <symbol id="i-bot" viewBox="0 0 24 24"><rect class="gi" x="5" y="10" width="14" height="10" rx="2"/><circle class="gi" cx="9" cy="15" r="1"/><circle class="gi" cx="15" cy="15" r="1"/><path class="gi" d="M12 10V6"/><circle class="gi" cx="12" cy="4" r="2"/></symbol>
+      <symbol id="i-workspace" viewBox="0 0 24 24"><rect class="gi" x="3" y="3" width="7" height="7" rx="1"/><rect class="gi" x="14" y="3" width="7" height="7" rx="1"/><rect class="gi" x="3" y="14" width="7" height="7" rx="1"/><rect class="gi" x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path class="gi" d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path class="gi" d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle class="gi" cx="9" cy="8" r="3"/><path class="gi" d="M3 20a6 6 0 0 1 12 0"/><circle class="gi" cx="17" cy="9" r="2.5"/><path class="gi" d="M14 20a5 5 0 0 1 7 0"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path class="gi" d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7z"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path class="gi" d="M20 6L9 17l-5-5"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-white/90 border-b border-purple-100/70">
+    <nav class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-3">
+      <a href="https://pi.gottao.com/" class="flex items-center gap-2 font-extrabold text-lg focus-ring rounded-lg shrink-0 min-w-0">
+        <img src="https://www.gottao.com/pi-logo.png" alt="" class="w-8 h-8 rounded-lg brand-logo shrink-0" aria-hidden="true" />
+        <span>Pi<span class="text-primary-700">.Agent</span></span>
+      </a>
+      <div class="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-600">
+        <a href="#product" class="hover:text-primary-700 focus-ring rounded-md">产品</a>
+        <a href="#how" class="hover:text-primary-700 focus-ring rounded-md">原理</a>
+        <a href="#capabilities" class="hover:text-primary-700 focus-ring rounded-md">能力</a>
+        <a href="#scenarios" class="hover:text-primary-700 focus-ring rounded-md">场景</a>
+        <a href="#pricing" class="hover:text-primary-700 focus-ring rounded-md">定价</a>
+        <a href="#faq" class="hover:text-primary-700 focus-ring rounded-md">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <a href="https://www.gottao.com/" class="hidden sm:inline-flex items-center gap-1.5 focus-ring rounded-full px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary-700 hover:bg-primary-50 border border-transparent hover:border-primary-100">
+          <img src="https://www.gottao.com/gottao-logo.png" alt="" class="w-4 h-4 rounded shrink-0" aria-hidden="true" />
+          回到 Gottao
+        </a>
+        <a href="https://pi.gottao.com/app/" class="focus-ring text-sm font-semibold text-white hero-grad hover:opacity-95 rounded-full px-4 py-2 shadow-lg shadow-primary-800/20">打开工作台</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section id="top" class="hero-grad text-white pt-32 pb-20 lg:pb-24 relative overflow-hidden">
+      <div class="absolute inset-0 hero-glow"></div>
+      <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-[minmax(0,1fr)_minmax(360px,480px)] gap-12 items-center relative z-10">
+        <div>
+          <span class="inline-block text-xs font-semibold tracking-wide pill-soft rounded-full px-3 py-1 mb-6">Enterprise Agent Workspace · 企业 AI 工作入口</span>
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mb-6">
+            把企业知识变成<br>每个岗位都能调用的<br>AI 工作入口
+          </h1>
+          <p class="text-lg text-white/90 mb-4 max-w-xl leading-relaxed">
+            <strong>Pi.Agent</strong> 是企业知识库与智能体工作台 SaaS：统一挂载文档与 SOP，用自然语言调度 Agent 执行任务，并通过 <strong>Livo SSO</strong> 与会议待办派发，让 AI 真正进入日常工作流。
+          </p>
+          <div class="flex flex-wrap gap-4 mt-8">
+            <a href="https://pi.gottao.com/app/" class="focus-ring bg-white hover:bg-purple-50 text-primary-800 font-semibold rounded-2xl px-7 py-3.5 shadow-xl shadow-purple-950/20">打开工作台</a>
+            <a href="#how" class="focus-ring border border-white/30 hover:bg-white/10 text-white font-semibold rounded-2xl px-7 py-3.5">看工作原理</a>
+          </div>
+          <p class="mt-6 text-sm text-white/70">Pi.Agent by Gottao · Livo SSO · 本地优先 · 可私有化</p>
+        </div>
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 md:p-6 backdrop-blur-xl shadow-2xl shadow-purple-950/20">
+          <div class="bg-white rounded-2xl p-6 text-ink shadow-xl shadow-purple-950/10">
+            <div class="text-xs font-bold text-primary-700 mb-2">一句话价值</div>
+            <p class="text-base font-semibold leading-relaxed mb-5">Livo 会议待办 → Pi workspace 自动执行 → 状态回写 Livo；销售问产品资料 → 基于 KB 生成邮件草稿。</p>
+            <div class="space-y-3 text-sm">
+              <div class="rounded-xl border border-purple-100 bg-primary-50 p-3"><span class="font-bold text-primary-800">知识</span> — 文档、SOP、FAQ 统一挂载</div>
+              <div class="rounded-xl border border-purple-100 p-3"><span class="font-bold text-gray-900">调度</span> — 插件 + MCP + 浏览器 Agent</div>
+              <div class="rounded-xl border border-purple-100 p-3"><span class="font-bold text-gray-900">协同</span> — Livo SSO + 待办派发与回写</div>
+              <div class="rounded-xl border border-purple-100 p-3"><span class="font-bold text-gray-900">沉淀</span> — workspace / session 全程可追溯</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-center mt-4">
+            <div class="pill-soft rounded-xl px-3 py-3"><div class="text-lg font-extrabold">Livo</div><div class="text-[11px] text-white/70">SSO 登录</div></div>
+            <div class="pill-soft rounded-xl px-3 py-3"><div class="text-lg font-extrabold">KB</div><div class="text-[11px] text-white/70">知识库 RAG</div></div>
+            <div class="pill-soft rounded-xl px-3 py-3"><div class="text-lg font-extrabold">Agent</div><div class="text-[11px] text-white/70">任务可追溯</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust bar -->
+    <section class="bg-slate-900 text-white border-t border-white/10">
+      <div class="max-w-6xl mx-auto px-5 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div><div class="text-2xl font-extrabold text-primary-300">Livo SSO</div><div class="text-xs text-gray-400">统一身份 · 一键登录</div></div>
+        <div><div class="text-2xl font-extrabold text-primary-300">KB + RAG</div><div class="text-xs text-gray-400">读自家资料 · 非泛化 ChatGPT</div></div>
+        <div><div class="text-2xl font-extrabold text-primary-300">Agent</div><div class="text-xs text-gray-400">插件 · MCP · 浏览器</div></div>
+        <div><div class="text-2xl font-extrabold text-primary-300">SaaS</div><div class="text-xs text-gray-400">席位订阅 · 可私有化</div></div>
+      </div>
+    </section>
+
+    <!-- Pain -->
+    <section class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">企业 AI 落地，难的不是「有没有模型」，而是「能不能用起来」</h2>
+        <p class="text-center text-gray-500 mb-6 max-w-3xl mx-auto reveal leading-relaxed">很多团队已经买了多个 AI 工具，但知识仍散在飞书、Word、微信和员工个人 ChatGPT 里。会议定了待办，执行却靠人工复制粘贴；销售写邮件，找不到最新产品资料。</p>
+        <p class="text-center text-gray-500 mb-14 max-w-2xl mx-auto reveal">Pi.Agent 要解决的，就是这条链路上的核心断点：<strong class="text-ink">从分散的企业知识与会话待办，到可追溯、可协作的 Agent 工作流。</strong></p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="w-11 h-11 rounded-xl hero-grad text-white flex items-center justify-center mb-4 shadow-lg shadow-primary-800/20"><svg class="w-6 h-6"><use href="#i-workspace"/></svg></div>
+            <h3 class="font-bold text-lg mb-2">工具太多、入口太散</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">每个员工各玩各的 ChatGPT，没有统一工作台，老板看不到 AI 真正产出了什么。</p>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="w-11 h-11 rounded-xl hero-grad text-white flex items-center justify-center mb-4 shadow-lg shadow-primary-800/20"><svg class="w-6 h-6"><use href="#i-book"/></svg></div>
+            <h3 class="font-bold text-lg mb-2">知识库有了却调不动</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">文档堆在网盘，销售、客服、运营查询慢，AI 回答缺少真实企业上下文。</p>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="w-11 h-11 rounded-xl hero-grad text-white flex items-center justify-center mb-4 shadow-lg shadow-primary-800/20"><svg class="w-6 h-6"><use href="#i-link"/></svg></div>
+            <h3 class="font-bold text-lg mb-2">会议待办执行断层</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">Livo 里定了 action item，却要靠人工再开工具、再复制任务描述，状态无法自动同步。</p>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="w-11 h-11 rounded-xl hero-grad text-white flex items-center justify-center mb-4 shadow-lg shadow-primary-800/20"><svg class="w-6 h-6"><use href="#i-users"/></svg></div>
+            <h3 class="font-bold text-lg mb-2">Agent 过程不可追溯</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">任务跑完没有记录，协作难复盘，IT 担心数据与权限不可控。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- What is -->
+    <section id="product" class="py-24 section-soft">
+      <div class="max-w-6xl mx-auto px-5">
+        <div class="grid lg:grid-cols-2 gap-12 items-start">
+          <div class="reveal">
+            <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Pi.Agent 是什么</h2>
+            <p class="text-gray-600 leading-relaxed mb-6"><strong>Pi.Agent</strong>（pi-app）是一款 <strong>企业知识库 + 智能体工作台</strong> SaaS —— 专门帮 10–50 人团队把分散知识变成可调度、可沉淀的 AI 工作入口。</p>
+            <p class="text-gray-600 mb-4">它会把企业日常工作中需要的四件事，统一到一个 workspace 里：</p>
+            <ul class="space-y-3 text-gray-600">
+              <li class="flex gap-2"><span class="text-primary-700 font-bold shrink-0">▸</span><span><strong>挂载知识</strong>（文档、SOP、FAQ、项目记录）</span></li>
+              <li class="flex gap-2"><span class="text-primary-700 font-bold shrink-0">▸</span><span><strong>调度 Agent</strong>（自然语言发起；插件 + MCP + 浏览器）</span></li>
+              <li class="flex gap-2"><span class="text-primary-700 font-bold shrink-0">▸</span><span><strong>协同 Livo</strong>（SSO 登录；会议待办一键派发与状态回写）</span></li>
+              <li class="flex gap-2"><span class="text-primary-700 font-bold shrink-0">▸</span><span><strong>沉淀过程</strong>（workspace、session、任务状态全程可追溯）</span></li>
+            </ul>
+            <p class="mt-6 text-sm text-primary-800 font-medium bg-primary-50 rounded-xl px-4 py-3 border border-purple-100">Your company's knowledge. One agent workspace.</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 md:p-8 border-2 border-slate-100 shadow-sm reveal">
+            <h3 class="font-extrabold text-xl mb-5">Pi.Agent 不是什么</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="text-left text-gray-400 border-b border-gray-100"><th class="pb-3 pr-4 font-medium">不是</th><th class="pb-3 font-medium">而是</th></tr></thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr><td class="py-3 pr-4 text-gray-400">开发者 CLI 玩具</td><td class="py-3 font-medium">全员可用的 AI 工作入口</td></tr>
+                  <tr><td class="py-3 pr-4 text-gray-400">泛化 ChatGPT 替代品</td><td class="py-3 font-medium">基于企业 KB 的可控问答与执行</td></tr>
+                  <tr><td class="py-3 pr-4 text-gray-400">仅搭建平台的 Coze / Dify</td><td class="py-3 font-medium">KB + workspace + 任务追溯一体</td></tr>
+                  <tr><td class="py-3 pr-4 text-gray-400">与 Livo 绑死的附件</td><td class="py-3 font-medium">独立 SaaS；Livo 是身份与待办输入层</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Audience -->
+    <section class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">为谁而生</h2>
+        <p class="text-center text-gray-500 mb-14 max-w-2xl mx-auto reveal">先判断 Pi.Agent 是否匹配你的团队规模与知识密度，再打开工作台完成首次任务。</p>
+        <div class="grid lg:grid-cols-2 gap-6 mb-10">
+          <div class="rounded-2xl border-2 border-slate-100 p-8 card-hover reveal bg-white">
+            <div class="text-primary-700 font-extrabold text-sm mb-3">最适合</div>
+            <ul class="space-y-3 text-gray-600 text-sm leading-relaxed">
+              <li><strong>10–50 人知识密集团队</strong> — 咨询、外贸、运营、电商等，文档与 SOP 多但入口散。</li>
+              <li><strong>已有 Livo 或 Gottao 触达的客户</strong> — 希望会议待办能自动往下执行。</li>
+              <li><strong>销售 / 客服 / 运营多岗位协作</strong> — 需要基于真实产品资料生成回复与跟进。</li>
+              <li><strong>IT 关注权限与部署</strong> — 本地优先；Enterprise 可私有化、SSO、审计。</li>
+            </ul>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-100 p-8 card-hover reveal bg-white">
+            <div class="text-gray-400 font-extrabold text-sm mb-3">暂时不适合</div>
+            <ul class="space-y-3 text-gray-500 text-sm leading-relaxed">
+              <li>期望「全托管代运营 AI 转型」、不想自己挂载资料与跟进任务的客户。</li>
+              <li>团队尚无基本文档/SOP，知识库无从落地。</li>
+              <li>仅需一次性文案生成、无持续 workspace 与协作需求。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-2xl border-2 border-slate-100 reveal">
+          <table class="w-full text-sm">
+            <thead class="bg-primary-50 text-left">
+              <tr><th class="p-4 font-bold">典型角色</th><th class="p-4 font-bold">Pi.Agent 带来的价值</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 bg-white">
+              <tr><td class="p-4 font-semibold whitespace-nowrap">老板 / 管理层</td><td class="p-4 text-gray-600">一个入口调用知识 + Agent，减少工具碎片化，看见 AI 产出</td></tr>
+              <tr><td class="p-4 font-semibold whitespace-nowrap">销售 / 外贸</td><td class="p-4 text-gray-600">基于产品 PDF 写邮件、答 FAQ；可与 DTEye 线索跟进协同</td></tr>
+              <tr><td class="p-4 font-semibold whitespace-nowrap">运营 / 电商</td><td class="p-4 text-gray-600">Listing、广告、SOP 查询与复盘建议，减少重复劳动</td></tr>
+              <tr><td class="p-4 font-semibold whitespace-nowrap">客服</td><td class="p-4 text-gray-600">标准话术 + 异常升级；与 Voice Agent 共用知识库</td></tr>
+              <tr><td class="p-4 font-semibold whitespace-nowrap">产品 / 研发 / IT</td><td class="p-4 text-gray-600">需求、文档、协作可追溯；Enterprise 私有化与 SSO</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- How -->
+    <section id="how" class="py-24 section-soft">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">工作原理：四步，从知识到可执行 Agent 任务</h2>
+        <p class="text-center text-gray-500 mb-14 max-w-2xl mx-auto reveal">Pi.Agent 的操作逻辑与日常工作流一致 — Livo 用户零额外账号，打开即用。</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <div class="bg-white rounded-2xl p-6 border-2 border-slate-100 text-center card-hover reveal">
+            <div class="w-12 h-12 rounded-full hero-grad text-white font-extrabold flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-800/20">1</div>
+            <h3 class="font-extrabold text-lg mb-2">Livo SSO 登录</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">打开 <code class="text-xs bg-gray-50 px-1 rounded">pi.gottao.com/app</code>，未登录自动跳转 Livo，ticket 换取 Pi 会话，无需重复注册。</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border-2 border-slate-100 text-center card-hover reveal">
+            <div class="w-12 h-12 rounded-full hero-grad text-white font-extrabold flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-800/20">2</div>
+            <h3 class="font-extrabold text-lg mb-2">挂载企业知识库</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">上传文档、粘贴 URL，或挂载 SOP / FAQ / 产品资料。RAG 让 Agent 回答基于真实企业内容。</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border-2 border-slate-100 text-center card-hover reveal">
+            <div class="w-12 h-12 rounded-full hero-grad text-white font-extrabold flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-800/20">3</div>
+            <h3 class="font-extrabold text-lg mb-2">发起任务或接收 Livo 待办</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">工作台自然语言提问；或从 Livo 会议 action item 一键派发到 Pi workspace，deep link 直达执行页。</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border-2 border-slate-100 text-center card-hover reveal">
+            <div class="w-12 h-12 rounded-full hero-grad text-white font-extrabold flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-800/20">4</div>
+            <h3 class="font-extrabold text-lg mb-2">Agent 执行 + 状态回写</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">插件、MCP、浏览器完成 run；session 全程可追溯。running / failed / done 自动回写 Livo，形成闭环。</p>
+          </div>
+        </div>
+        <div class="max-w-3xl mx-auto rounded-2xl border-2 border-primary-200 bg-white p-6 md:p-8 reveal">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl hero-grad text-white flex items-center justify-center shrink-0 shadow-lg shadow-primary-800/20"><svg class="w-6 h-6"><use href="#i-link"/></svg></div>
+            <div>
+              <h3 class="font-extrabold text-lg mb-2">Livo 协同亮点</h3>
+              <p class="text-sm text-gray-600 leading-relaxed mb-3">Pi.Agent 与 Livo 深度集成：<strong>Livo SSO</strong> 作为统一身份层；<strong>会议待办派发</strong> 将 action item 直接送入 Pi workspace；执行完成后 <strong>状态自动回写</strong> Livo，让会议决议真正落地。</p>
+              <p class="text-xs text-gray-500">Phase 1 价值公式：把一份企业资料或一条会议待办交给 Pi → 在可追溯的 workspace 里跑出结果，并能回写 Livo。</p>
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-10 reveal">
+          <a href="https://pi.gottao.com/app/" class="inline-flex focus-ring hero-grad hover:opacity-95 text-white font-semibold rounded-2xl px-8 py-3.5 shadow-lg shadow-primary-800/20">打开工作台 →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capabilities -->
+    <section id="capabilities" class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">六大核心能力</h2>
+        <p class="text-center text-gray-500 mb-14 max-w-2xl mx-auto reveal">从知识挂载到 Agent 执行，一条流水线完成企业 AI 工作流标准化。</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <article class="rounded-2xl border-2 border-slate-100 p-7 card-hover reveal">
+            <div class="text-primary-700 font-extrabold text-sm mb-2">① 企业知识库</div>
+            <h3 class="font-extrabold text-xl mb-3">统一挂载，全员可读</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">文档、SOP、FAQ、项目记录统一挂载到 workspace。RAG 问答让销售、客服、运营基于真实资料生成回复，而非泛化 ChatGPT 文案。</p>
+          </article>
+          <article class="rounded-2xl border-2 border-slate-100 p-7 card-hover reveal">
+            <div class="text-primary-700 font-extrabold text-sm mb-2">② 智能体工作台</div>
+            <h3 class="font-extrabold text-xl mb-3">自然语言调度 Agent</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">用自然语言发起任务；默认插件集覆盖 skills、MCP 扩展、网页检索与浏览器自动化。Business+ 可接入企业 MCP 连接器。</p>
+          </article>
+          <article class="rounded-2xl border-2 border-slate-100 p-7 card-hover reveal">
+            <div class="text-primary-700 font-extrabold text-sm mb-2">③ 会话与任务管理</div>
+            <h3 class="font-extrabold text-xl mb-3">workspace 全程可追溯</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">workspace、session、run 状态清晰可查；协作记录可复盘。North Star 指标 WAAT — 每周活跃 Agent 任务数 — 衡量真实使用深度。</p>
+          </article>
+          <article class="rounded-2xl border-2 border-primary-200 bg-primary-50/30 p-7 card-hover reveal">
+            <div class="text-primary-700 font-extrabold text-sm mb-2">④ Livo 协同 ★</div>
+            <h3 class="font-extrabold text-xl mb-3">SSO + 会议待办派发</h3>
+            <p class="text-sm text-gray-500 leading-relaxed"><strong>Livo SSO</strong> 一键登录 Pi 工作台；<strong>会议待办一键派发</strong> 将 action item 送入 workspace；执行状态 running / failed / done 自动<strong>回写 Livo</strong>，打通会议到执行闭环。</p>
+          </article>
+          <article class="rounded-2xl border-2 border-slate-100 p-7 card-hover reveal">
+            <div class="text-primary-700 font-extrabold text-sm mb-2">⑤ 开放插件生态</div>
+            <h3 class="font-extrabold text-xl mb-3">MCP + 浏览器 + Skills</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">pi-skills-sh、pi-mcp-extension、pi-search-hub、pi-agent-browser-native 等默认插件，兼顾灵活扩展与企业系统集成需求。</p>
+          </article>
+          <article class="rounded-2xl border-2 border-slate-100 p-7 card-hover reveal">
+            <div class="text-primary-700 font-extrabold text-sm mb-2">⑥ 本地优先 · 可私有化</div>
+            <h3 class="font-extrabold text-xl mb-3">权限可控，Enterprise 内网部署</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">Pi 自有 HttpOnly cookie，不共享 JWT；敏感 API 匿名拒绝。Enterprise 支持 VPC 私有化、SAML SSO、审计日志与 BYOK 密钥管理（路线图）。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scenarios -->
+    <section id="scenarios" class="py-24 section-soft">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">典型使用场景</h2>
+        <p class="text-center text-gray-500 mb-14 max-w-2xl mx-auto reveal">从 Livo 待办执行到销售知识库，四种常见落地方式。</p>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-2xl p-7 border-2 border-primary-200 card-hover reveal">
+            <span class="text-xs font-bold text-primary-700 bg-primary-50 rounded-full px-2.5 py-1">场景 A · P0</span>
+            <h3 class="font-extrabold text-xl mt-4 mb-3">Livo 会议待办自动执行</h3>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">输入</strong>：Livo 会议 action item（如「整理竞品对比表」「起草客户跟进邮件」）。</p>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">用法</strong>：会议中一键派发到 Pi workspace，Agent 在隔离目录执行，状态实时回写 Livo。</p>
+            <p class="text-sm text-gray-500"><strong class="text-ink">输出</strong>：可追溯 run 结果 + Livo 待办状态更新，会议决议不再停留在文档里。</p>
+          </div>
+          <div class="bg-white rounded-2xl p-7 border-2 border-slate-100 card-hover reveal">
+            <span class="text-xs font-bold text-primary-700 bg-primary-50 rounded-full px-2.5 py-1">场景 B</span>
+            <h3 class="font-extrabold text-xl mt-4 mb-3">销售知识库问答与邮件草稿</h3>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">输入</strong>：产品 PDF、规格表、FAQ、历史邮件模板。</p>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">用法</strong>：挂载 KB 后直接提问或生成开发信；可与 DTEye 线索任务联动跟进。</p>
+            <p class="text-sm text-gray-500"><strong class="text-ink">输出</strong>：基于真实资料的邮件草稿、FAQ 答复，新人也能稳定输出。</p>
+          </div>
+          <div class="bg-white rounded-2xl p-7 border-2 border-slate-100 card-hover reveal">
+            <span class="text-xs font-bold text-primary-700 bg-primary-50 rounded-full px-2.5 py-1">场景 C</span>
+            <h3 class="font-extrabold text-xl mt-4 mb-3">运营 / 电商 SOP 查询</h3>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">输入</strong>：Listing 规范、广告投放 SOP、竞品分析模板。</p>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">用法</strong>：运营在工作台查询 SOP 或请 Agent 生成 Listing / 广告建议。</p>
+            <p class="text-sm text-gray-500"><strong class="text-ink">输出</strong>：标准化建议与复盘，减少重复查文档与 copy-paste。</p>
+          </div>
+          <div class="bg-white rounded-2xl p-7 border-2 border-slate-100 card-hover reveal">
+            <span class="text-xs font-bold text-primary-700 bg-primary-50 rounded-full px-2.5 py-1">场景 D</span>
+            <h3 class="font-extrabold text-xl mt-4 mb-3">客服标准回复与异常升级</h3>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">输入</strong>：售后 SOP、工单描述、知识库 FAQ。</p>
+            <p class="text-sm text-gray-500 mb-2"><strong class="text-ink">用法</strong>：客服基于 KB 生成标准回复；复杂 case 给出升级建议；Voice Agent 共用同一 KB。</p>
+            <p class="text-sm text-gray-500"><strong class="text-ink">输出</strong>：一致的话术质量 + 可追溯的处理记录。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product matrix -->
+    <section class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">产品能力全景</h2>
+        <p class="text-center text-gray-500 mb-10 max-w-2xl mx-auto reveal">Pi.Agent 采用「核心 workspace + 分层扩展」的产品结构，随团队规模与集成需求升级。</p>
+        <div class="overflow-x-auto rounded-2xl border-2 border-slate-100 reveal">
+          <table class="w-full text-sm min-w-[640px]">
+            <thead class="bg-primary-50 text-left">
+              <tr><th class="p-4 font-bold">能力</th><th class="p-4 font-bold">说明</th><th class="p-4 font-bold whitespace-nowrap">套餐</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="p-4 font-medium">Livo SSO 登录</td><td class="p-4 text-gray-600">ticket 换 Pi 会话，零额外账号</td><td class="p-4">Starter+</td></tr>
+              <tr><td class="p-4 font-medium">workspace 隔离</td><td class="p-4 text-gray-600">按用户 / tenant 目录隔离</td><td class="p-4">Starter+</td></tr>
+              <tr><td class="p-4 font-medium">Livo 待办派发 + 状态回写</td><td class="p-4 text-gray-600">会议 action item → Pi run → Livo 同步</td><td class="p-4">Starter+</td></tr>
+              <tr><td class="p-4 font-medium">知识库挂载 + RAG</td><td class="p-4 text-gray-600">文档上传 / URL；问答与生成</td><td class="p-4">Starter – Business</td></tr>
+              <tr><td class="p-4 font-medium">默认插件集</td><td class="p-4 text-gray-600">skills / MCP / search / browser</td><td class="p-4">Starter+</td></tr>
+              <tr><td class="p-4 font-medium">Team 席位与协作记录</td><td class="p-4 text-gray-600">多成员 workspace、任务历史</td><td class="p-4">Team</td></tr>
+              <tr><td class="p-4 font-medium">多 KB / 更高 Agent 额度</td><td class="p-4 text-gray-600">多部门知识库、更高执行配额</td><td class="p-4">Team – Business</td></tr>
+              <tr><td class="p-4 font-medium">MCP 企业连接器</td><td class="p-4 text-gray-600">CRM、内部 API 等系统集成</td><td class="p-4">Business</td></tr>
+              <tr class="bg-gray-50/80"><td class="p-4 font-medium text-gray-500">多 tenant 企业账号</td><td class="p-4 text-gray-500">统一 admin、跨部门权限</td><td class="p-4 text-gray-500">Business+（路线图）</td></tr>
+              <tr class="bg-gray-50/80"><td class="p-4 font-medium text-gray-500">私有化部署</td><td class="p-4 text-gray-500">VPC 镜像、内网运行</td><td class="p-4 text-gray-500">Enterprise</td></tr>
+              <tr class="bg-gray-50/80"><td class="p-4 font-medium text-gray-500">SAML SSO / 审计 / SLA</td><td class="p-4 text-gray-500">企业 IT 合规要求</td><td class="p-4 text-gray-500">Enterprise</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-center mt-6 text-sm text-gray-500 max-w-2xl mx-auto reveal">产品正在快速迭代。Livo SSO + 待办派发 + KB 问答为当前阶段重点；Team 计费与 MCP 模板将陆续开放。<a href="https://pi.gottao.com/app/" class="text-primary-700 hover:underline font-medium">立即体验</a>工作台。</p>
+      </div>
+    </section>
+
+    <!-- Compare -->
+    <section class="py-24 section-soft">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">与常见方案的差异</h2>
+        <p class="text-center text-gray-500 mb-10 max-w-2xl mx-auto reveal italic">Your company's knowledge. One agent workspace.<br>不是「又一个 ChatGPT」，而是「读自家资料、跑可追溯任务、与 Livo 协同的企业工作台」。</p>
+        <div class="overflow-x-auto rounded-2xl border-2 border-slate-100 bg-white reveal">
+          <table class="w-full text-sm min-w-[720px]">
+            <thead class="bg-primary-50 text-left">
+              <tr><th class="p-4 font-bold">对比</th><th class="p-4">个人 ChatGPT</th><th class="p-4">企业微信 / 钉钉 AI</th><th class="p-4">Coze / Dify 搭建</th><th class="p-4 text-primary-700 font-bold">Pi.Agent</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="p-4 font-medium">企业知识上下文</td><td class="p-4 text-gray-500">无结构化 KB</td><td class="p-4 text-gray-500">平台内文档，Agent 浅</td><td class="p-4 text-gray-500">需自行搭建</td><td class="p-4 font-semibold text-primary-700">KB + RAG 一体</td></tr>
+              <tr><td class="p-4 font-medium">任务可追溯</td><td class="p-4 text-gray-500">对话即消失</td><td class="p-4 text-gray-500">弱</td><td class="p-4 text-gray-500">偏搭建日志</td><td class="p-4 font-semibold text-primary-700">workspace / session 全程记录</td></tr>
+              <tr><td class="p-4 font-medium">Livo 会议协同</td><td class="p-4 text-gray-500">无</td><td class="p-4 text-gray-500">无</td><td class="p-4 text-gray-500">无</td><td class="p-4 font-semibold text-primary-700">SSO + 待办派发 + 回写</td></tr>
+              <tr><td class="p-4 font-medium">Agent 扩展性</td><td class="p-4 text-gray-500">有限插件</td><td class="p-4 text-gray-500">平台锁定</td><td class="p-4 text-gray-500">有，但缺工作台</td><td class="p-4 font-semibold text-primary-700">开放 MCP + 浏览器 + skills</td></tr>
+              <tr><td class="p-4 font-medium">非研发岗位场景</td><td class="p-4 text-gray-500">通用</td><td class="p-4 text-gray-500">办公套件内</td><td class="p-4 text-gray-500">偏技术</td><td class="p-4 font-semibold text-primary-700">销售/运营/客服开箱即用</td></tr>
+              <tr><td class="p-4 font-medium">私有化 / 权限</td><td class="p-4 text-gray-500">公有云</td><td class="p-4 text-gray-500">平台绑定</td><td class="p-4 text-gray-500">视部署而定</td><td class="p-4 font-semibold text-primary-700">本地优先 + Enterprise 私有化</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-4 reveal">套餐与定价（参考）</h2>
+        <p class="text-center text-gray-500 mb-12 reveal">Team 席位订阅 + Enterprise 合同 · Livo 用户 Starter 免费试用 · 年付通常享约 2 个月赠送 · 以产品内公示为准</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="font-extrabold text-lg mb-1">Starter</div>
+            <div class="text-3xl font-extrabold mb-1">¥0</div>
+            <div class="text-xs text-gray-400 mb-4">Livo 用户试用</div>
+            <ul class="text-sm text-gray-600 space-y-2">
+              <li>1 workspace</li>
+              <li>Livo SSO 登录</li>
+              <li>有限 Agent 额度</li>
+              <li>基础 KB 挂载</li>
+            </ul>
+          </div>
+          <div class="rounded-2xl border-2 border-primary-400 p-6 shadow-lg relative card-hover reveal bg-white">
+            <div class="absolute -top-3 left-4 hero-grad text-white text-xs font-bold px-2.5 py-0.5 rounded-full">推荐</div>
+            <div class="font-extrabold text-lg mb-1">Team</div>
+            <div class="text-3xl font-extrabold mb-1">¥1,499<span class="text-base font-normal text-gray-400">/月</span></div>
+            <div class="text-xs text-gray-400 mb-4">5 人小团队</div>
+            <ul class="text-sm text-gray-600 space-y-2">
+              <li>5 席位</li>
+              <li>多 KB · 协作记录</li>
+              <li>Livo 待办派发</li>
+              <li>更高 Agent 额度</li>
+            </ul>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="font-extrabold text-lg mb-1">Business</div>
+            <div class="text-3xl font-extrabold mb-1">¥3,999<span class="text-base font-normal text-gray-400">/月</span></div>
+            <div class="text-xs text-gray-400 mb-4">15 人部门级</div>
+            <ul class="text-sm text-gray-600 space-y-2">
+              <li>15 席位</li>
+              <li>MCP 企业连接器</li>
+              <li>优先支持</li>
+              <li>更高 KB 容量</li>
+            </ul>
+          </div>
+          <div class="rounded-2xl border-2 border-slate-100 p-6 card-hover reveal bg-white">
+            <div class="font-extrabold text-lg mb-1">Enterprise</div>
+            <div class="text-3xl font-extrabold mb-1">定制</div>
+            <div class="text-xs text-gray-400 mb-4">大型 / 合规企业</div>
+            <ul class="text-sm text-gray-600 space-y-2">
+              <li>私有化部署</li>
+              <li>SAML SSO、SLA</li>
+              <li>审计日志</li>
+              <li>专属 MCP 集成</li>
+            </ul>
+          </div>
+        </div>
+        <div class="max-w-xl mx-auto rounded-2xl border border-purple-100 bg-primary-50 p-6 text-sm text-gray-600 reveal">
+          <div class="font-bold text-primary-800 mb-2">加购（可选）</div>
+          <ul class="space-y-1">
+            <li>额外席位：约 ¥199 / 月 / 人</li>
+            <li>Agent 执行额度包</li>
+            <li>存储 / KB 容量扩展</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compliance -->
+    <section class="py-24 section-soft">
+      <div class="max-w-6xl mx-auto px-5 grid lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+          <h2 class="text-3xl md:text-4xl font-extrabold mb-4">安全与部署</h2>
+          <p class="text-gray-600 leading-relaxed mb-6">Pi.Agent 采用 <strong>本地优先</strong> 架构：workspace 文件系统隔离，Pi 自有 HttpOnly cookie，不与 Livo 共享 JWT。</p>
+          <ul class="space-y-3 text-gray-600 text-sm leading-relaxed">
+            <li class="flex gap-2"><span class="text-primary-700 shrink-0">▸</span>匿名访问敏感 API 一律 401，权限边界清晰。</li>
+            <li class="flex gap-2"><span class="text-primary-700 shrink-0">▸</span>Livo SSO 仅作身份票据交换，不暴露跨域 token。</li>
+            <li class="flex gap-2"><span class="text-primary-700 shrink-0">▸</span>Enterprise 支持 VPC 私有化、SAML SSO、审计日志与 BYOK（路线图）。</li>
+            <li class="flex gap-2"><span class="text-primary-700 shrink-0">▸</span>支持数据删除请求，符合企业隐私合规基本实践。</li>
+          </ul>
+        </div>
+        <div class="bg-white rounded-2xl p-8 border-2 border-slate-100 reveal">
+          <div class="w-14 h-14 rounded-2xl hero-grad text-white flex items-center justify-center mb-5 shadow-lg shadow-primary-800/20"><svg class="w-7 h-7"><use href="#i-shield"/></svg></div>
+          <p class="text-gray-600 leading-relaxed mb-4"><strong>Pi.Agent by Gottao</strong> — 独立产品品牌；与 Livo、DTEye、Voice 同属 Gottao 生态，可单独订阅使用。</p>
+          <p class="text-sm text-gray-500">生态协同：Livo 提供身份与会议待办；DTEye 外贸线索可派发 Pi 跟进；Voice 与 Pi 共用知识库。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to start -->
+    <section class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-12 reveal">如何开始</h2>
+        <div class="grid md:grid-cols-4 gap-5 mb-10">
+          <div class="text-center reveal"><div class="w-10 h-10 rounded-full bg-primary-100 text-primary-700 font-extrabold flex items-center justify-center mx-auto mb-3">1</div><p class="text-sm text-gray-600">用 Livo 账号打开 <a href="https://pi.gottao.com/app/" class="text-primary-700 font-medium hover:underline">pi.gottao.com/app</a></p></div>
+          <div class="text-center reveal"><div class="w-10 h-10 rounded-full bg-primary-100 text-primary-700 font-extrabold flex items-center justify-center mx-auto mb-3">2</div><p class="text-sm text-gray-600">挂载第一份企业资料（产品 PDF、SOP 或 FAQ）</p></div>
+          <div class="text-center reveal"><div class="w-10 h-10 rounded-full bg-primary-100 text-primary-700 font-extrabold flex items-center justify-center mx-auto mb-3">3</div><p class="text-sm text-gray-600">从 Livo 派发一条会议待办，或在工作台直接提问</p></div>
+          <div class="text-center reveal"><div class="w-10 h-10 rounded-full bg-primary-100 text-primary-700 font-extrabold flex items-center justify-center mx-auto mb-3">4</div><p class="text-sm text-gray-600">团队需要协作？升级 Team 或联系 Enterprise 方案</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-24 section-soft">
+      <div class="max-w-3xl mx-auto px-5">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center mb-10 reveal">常见问题</h2>
+        <div class="space-y-3">
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">Pi.Agent 和 ChatGPT / Copilot 有什么区别？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">Pi.Agent 不是泛化对话工具，而是企业知识库 + Agent 工作台：挂载自家资料做 RAG，任务在 workspace 里可追溯，并与 Livo 会议待办打通。你得到的是「可协作的企业 AI 入口」，不是个人聊天窗口。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">必须用 Livo 才能用 Pi 吗？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">Phase 1 以 Livo SSO 为主要登录方式，Starter 面向 Livo 用户开放免费 workspace。Enterprise 将支持 SAML SSO 等独立身份体系。会议待办派发与状态回写需 Livo 协同。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">Livo 会议待办怎么派发到 Pi？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">在 Livo 会议中创建的 action item 可一键派发到 Pi workspace，系统生成 deep link 直达执行页。Agent 运行后，running / failed / done 状态自动回写 Livo，无需人工同步。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">知识库支持哪些格式？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">支持文档上传与 URL 挂载，覆盖 PDF、Word、网页等常见格式。Team / Business 提供更高 KB 容量与多知识库管理；具体限制以产品内公示为准。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">Agent 能连接企业内部系统吗？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">Business 套餐提供 MCP 企业连接器，可对接 CRM、内部 API 等。Enterprise 支持专属 MCP 集成与私有化部署，数据可留在内网。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">和 DTEye、Voice 是什么关系？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">同属 Gottao 生态的独立产品：DTEye 负责 TikTok 外贸线索发现，可将跟进任务派发 Pi；Voice 外呼 Agent 与 Pi 共用知识库；Livo 提供统一身份与会议协同。各产品可单独订阅。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">数据存在哪里？能否私有化？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">SaaS 版 workspace 按 tenant 隔离存储；Pi 使用独立 cookie 会话。Enterprise 提供 VPC 私有化镜像部署，满足内网与合规要求。详情请联系销售。</p></details>
+          <details class="rounded-2xl border-2 border-slate-100 p-5 bg-white reveal"><summary class="font-semibold pr-8">如何衡量团队是否真正在用？</summary><p class="mt-3 text-sm text-gray-600 leading-relaxed">我们以 WAAT（Weekly Active Agent Tasks）为核心指标：付费 tenant 内每周完成至少一次「有明确输入、输出、状态更新」的 Agent 任务数。试用阶段建议完成 3 次成功任务后再评估 Team 升级。</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary CTA -->
+    <section class="py-24 hero-grad text-white relative overflow-hidden">
+      <div class="absolute inset-0 hero-glow"></div>
+      <div class="max-w-4xl mx-auto px-5 text-center relative z-10">
+        <h2 class="text-3xl md:text-4xl font-extrabold mb-5">挂载知识 → 调度 Agent → Livo 待办闭环 → 团队可追溯协作</h2>
+        <p class="text-white/85 mb-4 text-lg leading-relaxed">企业 AI 落地正在从「每人一个 ChatGPT」走向「统一知识 + 统一工作台」。会议里定的待办、销售手里的产品资料、运营日常的 SOP —— 都应该是 Agent 能直接调用的输入。</p>
+        <p class="text-white/80 mb-8">如果你是一家希望用更低摩擦、更可持续的方式让 AI 进入日常工作的 10–50 人团队，Pi.Agent 值得成为你们的企业 Agent 第一个标准化入口。</p>
+        <a href="https://pi.gottao.com/app/" class="inline-flex focus-ring bg-white hover:bg-purple-50 text-primary-800 font-semibold text-lg rounded-2xl px-10 py-4 shadow-2xl shadow-purple-950/20">打开工作台</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-gradient-to-br from-gray-800 to-gray-900 text-gray-400 border-t border-white/10 py-10">
+    <div class="max-w-6xl mx-auto px-5 flex flex-col md:flex-row justify-between gap-6 text-sm">
+      <div>
+        <div class="flex items-center gap-2 font-extrabold text-white text-lg mb-2">
+          <img src="https://www.gottao.com/pi-logo.png" alt="" class="w-6 h-6 rounded" aria-hidden="true" />
+          Pi.Agent · 企业智能体工作台
+        </div>
+        <p class="text-gray-500">Enterprise Knowledge + Agent Workspace<br>Pi.Agent by <a href="https://www.gottao.com/" class="text-primary-300 hover:underline">Gottao 近道咨询</a></p>
+      </div>
+      <div class="flex flex-wrap gap-6">
+        <a href="https://pi.gottao.com/app/" class="hover:text-primary-300">打开工作台</a>
+        <a href="https://www.gottao.com/" class="hover:text-primary-300">Gottao 官网</a>
+        <a href="https://www.gottao.com/#contact" class="hover:text-primary-300">联系我们</a>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-5 mt-6 pt-6 border-t border-white/5 text-xs text-gray-600 text-center">© 2026 Shenzhen Gottao Consulting Co., Ltd. 深圳市近道咨询有限公司</div>
+  </footer>
+
+  <a href="https://pi.gottao.com/app/" class="md:hidden fixed bottom-4 inset-x-4 z-40 focus-ring hero-grad text-white text-center font-semibold rounded-2xl py-3.5 shadow-2xl shadow-primary-800/30">打开工作台</a>
+
+  <script>
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

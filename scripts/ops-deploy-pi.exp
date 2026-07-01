@@ -1,0 +1,18 @@
+# 部署 pi-site 静态页到 pi.gottao.com（pi-agent/site/public/pi/ → /var/www/pi-gottao）
+# 用法：tar czf /tmp/pi-site-static.tgz -C site/public/pi product.html robots.txt sitemap.xml \
+#     && expect scripts/ops-deploy-pi.exp
+# 历史来源：livo-opc/pi-site/.ops-deploy-pi.exp（2026-07-01 迁移）
+# 线上根目录统一为 /var/www/pi-gottao（product.html / robots.txt / sitemap.xml 均在此）
+# 主应用 /app/ 为 SPA proxy，勿覆盖整目录
+# 用法：tar czf /tmp/pi-site-static.tgz -C pi-site product.html robots.txt sitemap.xml && expect pi-site/.ops-deploy-pi.exp
+source [file join [file normalize [file join [file dirname [info script]] ..]] .ops _common.exp]
+
+set timeout 120
+set tarfile "/tmp/pi-site-static.tgz"
+set remote_tar "/tmp/pi-site-static.tgz"
+
+ops_scp $tarfile $remote_tar 120
+
+set ts [clock format [clock seconds] -format %Y%m%d%H%M%S]
+set remote_cmd "set -e; sudo -S bash -lc 'set -e; mkdir -p /var/www/pi-gottao /var/www/pi-backups/$ts; for f in product.html robots.txt sitemap.xml; do [ -f /var/www/pi-gottao/\$f ] && cp -a /var/www/pi-gottao/\$f /var/www/pi-backups/$ts/ || true; done; tar -xzf $remote_tar -C /var/www/pi-gottao; chown www-data:www-data /var/www/pi-gottao/product.html /var/www/pi-gottao/robots.txt /var/www/pi-gottao/sitemap.xml; echo DEPLOY_OK:$ts; ls -l /var/www/pi-gottao/product.html /var/www/pi-gottao/robots.txt /var/www/pi-gottao/sitemap.xml'"
+ops_ssh $remote_cmd 120
