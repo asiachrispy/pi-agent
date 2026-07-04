@@ -36,6 +36,10 @@
 - **Livo 侧边栏路径展示**（pi-app）：`formatLivoWorkspacePath` 基于 env 工作区根而非硬编码正则。
 
 ### Changed
+- **拉取并合并上游 pi / 跳过 pi-app**（2026-07-04，D-2026-011）：
+  - `pi`：合并 `upstream/main` `114bacf34..ee24a9ec5`（+9 commits，含 model catalog 刷新 + Cloudflare 524 重试 + Codex websocket 会话轮换 + Vercel AI Gateway attribution 移除 + pnpm self-update prune hint #6279 + DS4 context overflow 检测 + extra edit replacement fields 等）；冲突 `packages/ai/src/providers/{nvidia,openrouter}.models.ts`（model catalog 增量）全部 `--theirs` 采纳上游；合并提交 `79fefa9fb`，**未 push（ahead 10）**。
+  - `pi-app`：**跳过本轮同步**。本地 fork 与 `agegr/pi-web` 已严重 divergent：fork 领先 279 commits，405 文件差异；尝试 merge v0.7.5/v0.7.6/v0.7.7 产生 15 个冲突（AGENTS.md / README.md / package*.json / AppShell / ChatInput / ChatWindow / FileViewer / MessageView / SessionSidebar / useAgentSession / app/layout / files route / session-reader / types / tool-presets），按 AGENTS.md「对 pi-app 已成熟的 Web/桌面实现不因历史形态而回退」放弃整 merge。TODO：单独评估 v0.7.5–v0.7.7 中的 `feat: agent state reconciliation` 与 `feat: queued message panel` 是否可 cherry-pick。Demand：`demands/D-2026-011.md`。
+  - **验证**：`pi` `tsgo --noEmit` 通过、`npm test` 全 workspaces 2287 pass（sandbox fixture 故意 ETARGET 不计 fail）；`pi-app` `tsc --noEmit` 通过、`vitest run` 450/450 pass、`swift build` debug+release 通过。**`swift test` 因本机仅 CommandLineTools 缺 XCTest 跳过**（Package.swift 注释明示 test target 需要 Xcode；后续在 Xcode 环境补跑）。
 - **拉取并合并上游 pi / pi-app**（2026-06-27）：
   - `pi`：合并 `upstream/main`（earendil-works/pi **v0.80.3**，+30 commits）；`generate-models.ts` 冲突保留 fork 的 Agnes provider 常量；合并提交 `3cf8189b6`。
   - `pi-app`：合并 `upstream/main`（agegr/pi-web **v0.7.4**，+33 commits）；保留 Livo/i18n/terminal/workbench 能力，集成 `runningSessionIds` SSE、`useIsMobile`、draft 持久化、`PluginsConfig` 等 upstream 改动；`@livos/*` 暂锁 **0.80.2**（npm 尚无 0.80.3 alias）；合并提交 `7f6ff3e`。
