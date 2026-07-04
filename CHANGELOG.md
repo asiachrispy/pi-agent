@@ -21,6 +21,12 @@
 - **工作台路径收口与 AuthPrincipal**（pi-app）：新增 `lib/livo/workbench.ts`（`PI_WORKBENCH_BASE_PATH` / `buildSsoStartUrl`）、`lib/auth/principal.ts`、`lib/request-auth-common.ts`、`lib/livo/route-coverage.ts`；ADR `wiki/adr/0002-edge-node-auth-layers.md` 记录 Edge/Node 两层 SSO 与 API auth 契约。
 
 ### Fixed
+- **新建对话大模型无响应**（pi-app）：`POST /api/agent/new` 在 `type:"ensure_session"` 时错误地把 `type` 字段透传给 `session.send` → RPC 走 default 分支抛 `Unsupported command: ensure_session` → route 返回 500 → client `useAgentSession` 抛 `HTTP 500` → 「页面闪一下」。`createSessionAndDispatch` 在 ensure_session 分支短路（创建 runtime + 应用模型/thinking level，不调用 `session.send(promptCommand)`），与注释「only creates the runtime so clients can query commands」一致。Regression 测试 `route.test.ts` 覆盖 ensure_session 不被转发 + prompt 路径不被破坏两条边界。
+- **`/api/agent/new` 错误被吞**（pi-app）：`useAgentSession.ts` 之前对 4xx/5xx 直接 `throw new Error('HTTP ${res.status}')`，server 返回的 `{ error: "Error: Unsupported command: ensure_session" }` 等 body 完全被丢弃——DevTools Console 只看到 `HTTP 500`，无法定位。新增 `lib/agent-client.sendAgentNewCommand`（与 `sendAgentCommand` 同契约），throw 时优先带 server `body.error` 兜底 HTTP status；`useAgentSession` 两处 raw fetch（`ensureNewSession` + `handleSend`）改走 helper。`agent-client.test.ts` 覆盖成功路径、错误带 server body、缺 body 时回退到 HTTP status 三个分支。
+- **Livo 计量 ALS 漏账**（pi-app）：`AgentSessionWrapper` 构造时闭包捕获租户 `{tenantId, agentDir}` 快照，`recordUsageFromAssistantMessage` / 预算检查改用快照而非在事件回调内读 ALS——修复长运行 / steer / idle 场景 ALS 退栈后计量静默回退全局目录导致租户漏账（对齐 `docs/multi-tenant-livo-v1.md`「风险 · ALS 边界」）。
+- **Livo Redis session 多实例 revoke 一致性**（pi-app）：`RedisLivoSessionStore.get()` 保持同步返回缓存的同时触发去抖后台 `revalidateFromRedis` 对账——其它实例删除/更新会话后本实例最终驱逐缓存，消除"revoke 后仍是僵尸会话直到重启"。
+- **Livo 读路径归属校验绕过**（pi-app）：`rejectLivoCwdOutsideWorkspace` 改用 `realCwdBelongsToLivoUser`（realpath）防符号链接逃逸，与 `agent/new` 一致；目标不存在时退回纯路径判定避免误杀新建。
+- **Livo SSO 一致性小修**（pi-app）：`secret()`/`readSecret()` 收敛为单一来源；`PI_PUBLIC_ORIGIN` 默认值收口到 `resolvePiPublicOrigin()`；usage 回调失败改为落日志留痕不再静默吞错。
 - **首页设置移除已隐藏项目板块**（pi-app）：删除 `WorkbenchSettings` 中「已隐藏的项目」展示与恢复入口，保留项目下拉软删除过滤能力，避免首页出现该管理段落。
 - **Livo 会议搜索任务**（livo-backend + pi-app）：派发启用 `bash` 全工具集 + prompt 强制 pi-search-hub 检索；工作区 AGENTS.md 补充联网搜索规范。
 - **Livo SSO store 失效丢 deep link**（pi-app）：`app/page.tsx` 重定向 SSO 时保留原始 query（`?session=` / `?workspace=`），不再硬编码 `returnTo=/app/`。
@@ -30,6 +36,9 @@
 - **Livo 侧边栏路径展示**（pi-app）：`formatLivoWorkspacePath` 基于 env 工作区根而非硬编码正则。
 
 ### Changed
+- **拉取并合并上游 pi / pi-app**（2026-06-27）：
+  - `pi`：合并 `upstream/main`（earendil-works/pi **v0.80.3**，+30 commits）；`generate-models.ts` 冲突保留 fork 的 Agnes provider 常量；合并提交 `3cf8189b6`。
+  - `pi-app`：合并 `upstream/main`（agegr/pi-web **v0.7.4**，+33 commits）；保留 Livo/i18n/terminal/workbench 能力，集成 `runningSessionIds` SSE、`useIsMobile`、draft 持久化、`PluginsConfig` 等 upstream 改动；`@livos/*` 暂锁 **0.80.2**（npm 尚无 0.80.3 alias）；合并提交 `7f6ff3e`。
 - **API 鉴权统一身份模型**（pi-app）：`requireApiAuth` 返回 `AuthPrincipal`；`withTenant` 从 `resolveLivoPrincipal` 注入租户上下文；删除未使用的 `authorizeRequestEdge`；约 35 条 API route 改用 `isAuthError` 守卫。
 - **Livo SSO 直登与受控接入方案**：`pi.gottao.com/` 保持产品介绍页，工作台入口固定为 `pi.gottao.com/app/`；Livo 用户通过一次性 SSO ticket 登录 Pi Web，Pi 设置自有 `pi_livo_session` HttpOnly cookie，并按 Livo userId 隔离 workspace/session。新增 ADR `wiki/adr/0001-livo-sso-ticket-auth.md`，更新 `docs/piweb-install-tencent.md` 记录 199 服务器环境变量、Nginx `/app` 代理、匿名 API 401、外站 returnTo 400 等上线验收结果。
 - **新增 Pi.Agent Web 腾讯云部署方案文档**：记录 `pi.gottao.com` 在腾讯云 `43.138.130.199` 的部署架构、systemd/Nginx 配置、环境变量、数据目录、安全边界、验证和运维步骤，作为大陆用户开放试用环境的操作参考。涉及：`docs/piweb-install-tencent.md`。
@@ -48,6 +57,11 @@
 - **执行上游/远端同步约定**（pi / pi-app）：`pi` fetch `origin` + `upstream` 后确认 `upstream/main` 无新增，保持 `main == origin/main`；`pi-app` fetch `origin` + `upstream` 后确认 `upstream/main` 无新增，并合并 `origin/main` 的 PR #7（`refactor/extract-pi-app-only-logic`），将 `AppShell` / `ChatInput` 中的 pi-app 专属逻辑抽到 `hooks/useTerminalPanel` 与 `lib/chat-input-tool-presets`，新增对应单测。
 - **补齐 pi-app v0.8.10 lockfile 版本**（pi-app）：合并前按脏树约定先提交 `package-lock.json` 版本号同步（`0.8.9` → `0.8.10`），避免在未提交改动上执行远端合并。
 - **发布 pi-app v0.8.11**（pi-app）：本机按用户确认的环境策略以 `swift build` 作为 macOS 原生侧验证，不在缺完整 Xcode/XCTest 的机器上执行 `swift test`；重新打包 Next standalone `Pi.app` 并发布 DMG。
+
+## [0.8.16] - 2026-07-02
+
+### Changed
+- **发布 pi @livos 0.80.3 + pi-app v0.8.16**（pi / pi-app）：合并 upstream pi v0.80.3 / pi-web v0.7.4 后完成 `@livos` npm 发布与 macOS DMG/GitHub Release；bundle `0.8.16p0.80.3`。
 
 ## [0.8.10] - 2026-06-20
 
