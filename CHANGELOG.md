@@ -8,17 +8,7 @@
 
 ## [Unreleased]
 
-### Added
-- **Livo M2 #11c Remote cookie store**（pi-app）：`hasValidRemoteSessionWithStore`；internal verify 支持 `?kind=remote`；middleware 不再盲放行 `pi_web_session`（#11d）。
-- **Livo M4 预算 warn-only + usage 回调**（pi-app + livo-backend）：Pi `notifyLivoTokenUsage` → Livo `POST /pi-agent/callbacks/usage` 落 Supabase `token_usage`（`PI_LIVO_USAGE_CALLBACK_ENABLED` 默认关）。
-- **Livo M3 token usage ledger**（pi-app）：`recordUsageFromAssistantMessage` 挂 `rpc-manager` `message_end`；租户 `token-usage.jsonl` 增量记账；`/api/usage` 与 session 扫描去重合并。
-- **Livo M2 internal session verify + SSO 单层**（pi-app）：`GET /api/internal/session/exists`（loopback + `PI_INTERNAL_VERIFY_TOKEN`）；middleware #11b `hasValidLivoSessionWithStore`；#10 `page.tsx` 在 internal verify 启用时不再 redirect store。
-- **Livo M1 Redis SessionStore**（pi-app）：`redis` 依赖 + `RedisLivoSessionStore`（进程内缓存 + 异步持久化）；`PI_SESSION_STORE_DUAL_WRITE` 双写；`PI_SESSION_STORE_KIND=redis` 读切 Redis；启动 `instrumentation` warm + 从 JSON 导入缺失会话；deploy 脚本写入 `PI_SESSION_STORE_*`。
-- **Livo M0：SessionStore 抽象 + middleware Bearer 收紧 + 审计扩展**（pi-app）：`lib/auth/session-store.ts`（`FileLivoSessionStore`）；middleware #11a 移除 Bearer 盲放行；`RemoteAuditEvent` 增加 `tenantId`/`principalKind`，挂点覆盖 Livo logout、SSO callback、global-config 403。
-- **Livo #9–#12 架构定稿**（docs）：`docs/livo-integration-todo.md` 补充方案 A/B/C 对比与已确认决策——会话复用现有 Redis（db=3）、Edge 走 internal verify、计量分阶段 jsonl→Livo 写 Supabase，Pi 不直连 PG。
-- **Livo 集成优化代办清单**（pi-app）：新增 `docs/livo-integration-todo.md`，基于 code-simplifier 审查与方案二设计文档整理 P0–P3 任务并逐项落地。
-- **Livo 统一配置与路径工具**（pi-app）：新增 `lib/livo/config.ts`（`resolveLivoWorkspaceRoot` / SSO 开关）、`lib/livo/path-utils.ts`（`pathBelongsToRoot`）、`lib/auth-decision.ts`（middleware 认证决策纯函数）。
-- **工作台路径收口与 AuthPrincipal**（pi-app）：新增 `lib/livo/workbench.ts`（`PI_WORKBENCH_BASE_PATH` / `buildSsoStartUrl`）、`lib/auth/principal.ts`、`lib/request-auth-common.ts`、`lib/livo/route-coverage.ts`；ADR `wiki/adr/0002-edge-node-auth-layers.md` 记录 Edge/Node 两层 SSO 与 API auth 契约。
+## [0.8.17] - 2026-07-04
 
 ### Fixed
 - **新建对话大模型无响应**（pi-app）：`POST /api/agent/new` 在 `type:"ensure_session"` 时错误地把 `type` 字段透传给 `session.send` → RPC 走 default 分支抛 `Unsupported command: ensure_session` → route 返回 500 → client `useAgentSession` 抛 `HTTP 500` → 「页面闪一下」。`createSessionAndDispatch` 在 ensure_session 分支短路（创建 runtime + 应用模型/thinking level，不调用 `session.send(promptCommand)`），与注释「only creates the runtime so clients can query commands」一致。Regression 测试 `route.test.ts` 覆盖 ensure_session 不被转发 + prompt 路径不被破坏两条边界。
@@ -40,7 +30,18 @@
   - `pi`：合并 `upstream/main` `114bacf34..ee24a9ec5`（+9 commits，含 model catalog 刷新 + Cloudflare 524 重试 + Codex websocket 会话轮换 + Vercel AI Gateway attribution 移除 + pnpm self-update prune hint #6279 + DS4 context overflow 检测 + extra edit replacement fields 等）；冲突 `packages/ai/src/providers/{nvidia,openrouter}.models.ts`（model catalog 增量）全部 `--theirs` 采纳上游；合并提交 `79fefa9fb`，**未 push（ahead 10）**。
   - `pi-app`：**跳过本轮同步**。本地 fork 与 `agegr/pi-web` 已严重 divergent：fork 领先 279 commits，405 文件差异；尝试 merge v0.7.5/v0.7.6/v0.7.7 产生 15 个冲突（AGENTS.md / README.md / package*.json / AppShell / ChatInput / ChatWindow / FileViewer / MessageView / SessionSidebar / useAgentSession / app/layout / files route / session-reader / types / tool-presets），按 AGENTS.md「对 pi-app 已成熟的 Web/桌面实现不因历史形态而回退」放弃整 merge。TODO：单独评估 v0.7.5–v0.7.7 中的 `feat: agent state reconciliation` 与 `feat: queued message panel` 是否可 cherry-pick。Demand：`demands/D-2026-011.md`。
   - **验证**：`pi` `tsgo --noEmit` 通过、`npm test` 全 workspaces 2287 pass（sandbox fixture 故意 ETARGET 不计 fail）；`pi-app` `tsc --noEmit` 通过、`vitest run` 450/450 pass、`swift build` debug+release 通过。**`swift test` 因本机仅 CommandLineTools 缺 XCTest 跳过**（Package.swift 注释明示 test target 需要 Xcode；后续在 Xcode 环境补跑）。
-- **拉取并合并上游 pi / pi-app**（2026-06-27）：
+
+### Added
+- **Livo M2 #11c Remote cookie store**（pi-app）：`hasValidRemoteSessionWithStore`；internal verify 支持 `?kind=remote`；middleware 不再盲放行 `pi_web_session`（#11d）。
+- **Livo M4 预算 warn-only + usage 回调**（pi-app + livo-backend）：Pi `notifyLivoTokenUsage` → Livo `POST /pi-agent/callbacks/usage` 落 Supabase `token_usage`（`PI_LIVO_USAGE_CALLBACK_ENABLED` 默认关）。
+- **Livo M3 token usage ledger**（pi-app）：`recordUsageFromAssistantMessage` 挂 `rpc-manager` `message_end`；租户 `token-usage.jsonl` 增量记账；`/api/usage` 与 session 扫描去重合并。
+- **Livo M2 internal session verify + SSO 单层**（pi-app）：`GET /api/internal/session/exists`（loopback + `PI_INTERNAL_VERIFY_TOKEN`）；middleware #11b `hasValidLivoSessionWithStore`；#10 `page.tsx` 在 internal verify 启用时不再 redirect store。
+- **Livo M1 Redis SessionStore**（pi-app）：`redis` 依赖 + `RedisLivoSessionStore`（进程内缓存 + 异步持久化）；`PI_SESSION_STORE_DUAL_WRITE` 双写；`PI_SESSION_STORE_KIND=redis` 读切 Redis；启动 `instrumentation` warm + 从 JSON 导入缺失会话；deploy 脚本写入 `PI_SESSION_STORE_*`。
+- **Livo M0：SessionStore 抽象 + middleware Bearer 收紧 + 审计扩展**（pi-app）：`lib/auth/session-store.ts`（`FileLivoSessionStore`）；middleware #11a 移除 Bearer 盲放行；`RemoteAuditEvent` 增加 `tenantId`/`principalKind`，挂点覆盖 Livo logout、SSO callback、global-config 403。
+- **Livo #9–#12 架构定稿**（docs）：`docs/livo-integration-todo.md` 补充方案 A/B/C 对比与已确认决策——会话复用现有 Redis（db=3）、Edge 走 internal verify、计量分阶段 jsonl→Livo 写 Supabase，Pi 不直连 PG。
+- **Livo 集成优化代办清单**（pi-app）：新增 `docs/livo-integration-todo.md`，基于 code-simplifier 审查与方案二设计文档整理 P0–P3 任务并逐项落地。
+- **Livo 统一配置与路径工具**（pi-app）：新增 `lib/livo/config.ts`（`resolveLivoWorkspaceRoot` / SSO 开关）、`lib/livo/path-utils.ts`（`pathBelongsToRoot`）、`lib/auth-decision.ts`（middleware 认证决策纯函数）。
+- **工作台路径收口与 AuthPrincipal**（pi-app）：新增 `lib/livo/workbench.ts`（`PI_WORKBENCH_BASE_PATH` / `buildSsoStartUrl`）、`lib/auth/principal.ts`、`lib/request-auth-common.ts`、`lib/livo/route-coverage.ts`；ADR `wiki/adr/0002-edge-node-auth-layers.md` 记录 Edge/Node 两层 SSO 与 API auth 契约。
   - `pi`：合并 `upstream/main`（earendil-works/pi **v0.80.3**，+30 commits）；`generate-models.ts` 冲突保留 fork 的 Agnes provider 常量；合并提交 `3cf8189b6`。
   - `pi-app`：合并 `upstream/main`（agegr/pi-web **v0.7.4**，+33 commits）；保留 Livo/i18n/terminal/workbench 能力，集成 `runningSessionIds` SSE、`useIsMobile`、draft 持久化、`PluginsConfig` 等 upstream 改动；`@livos/*` 暂锁 **0.80.2**（npm 尚无 0.80.3 alias）；合并提交 `7f6ff3e`。
 - **API 鉴权统一身份模型**（pi-app）：`requireApiAuth` 返回 `AuthPrincipal`；`withTenant` 从 `resolveLivoPrincipal` 注入租户上下文；删除未使用的 `authorizeRequestEdge`；约 35 条 API route 改用 `isAuthError` 守卫。
