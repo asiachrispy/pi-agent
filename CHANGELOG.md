@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- **`jtbd-sync` 扩展启动报 `(0, _piCodingAgent.isAssistantMessage) is not a function`**（workspace `.pi/extensions/jtbd-sync/index.ts`）：扩展 `import { isAssistantMessage } from "@earendil-works/pi-coding-agent"`，但 `@earendil-works/pi-coding-agent` 当前 fork 为 `@livos/pi-coding-agent@0.80.3`，该 fork `dist/index.js` 并不 named-export `isAssistantMessage`（上游历史上以 `examples/extensions/plan-mode` 内部函数形式存在，未作为公开 API 暴露），运行每条 assistant 回复结束触发 `message_end` 时都会抛一次。改为扩展内本地守卫 `isAssistantMessage(message: AgentMessage | unknown): boolean`（沿用 `(role === "assistant")` 判断，与 `examples/extensions/plan-mode` 一致），消除对未导出 helper 的隐式依赖。
+
 ## [0.8.17] - 2026-07-04
 
 ### Fixed

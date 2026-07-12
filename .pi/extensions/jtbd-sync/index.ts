@@ -11,7 +11,21 @@ import * as path from "node:path";
 import { execSync } from "node:child_process";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { isAssistantMessage } from "@earendil-works/pi-coding-agent";
+
+/**
+ * 本地类型守卫：上游 `@earendil-works/pi-coding-agent` (当前 fork 为
+ * `@livos/pi-coding-agent@0.80.3`) 不再 named-export `isAssistantMessage`，
+ * 直接 import 会得到 `undefined`，运行时报 `is not a function`。
+ * 历史上 `examples/extensions/plan-mode` 内部仍按 (role === "assistant") 判断，
+ * 这里沿用同一规则，避免依赖一个未导出的 helper。
+ */
+function isAssistantMessage(message: AgentMessage | unknown): boolean {
+	return (
+		typeof message === "object" &&
+		message !== null &&
+		(message as { role?: string }).role === "assistant"
+	);
+}
 
 const JTBD_DIR = "JTBD";
 const DEMANDS_DIR = "demands";
