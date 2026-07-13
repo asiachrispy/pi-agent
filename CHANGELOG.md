@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+### Changed
+- **拉取并合并上游 pi**（2026-07-13）：`pi` 合并 `upstream/main` 至 `7303cbac`（含 v0.80.4–v0.80.6 及后续修复：ambient auth branch summary、OpenRouter session affinity、Copilot MAI-Code `/responses`、forced tool calls、agent_settled 生命周期、install-lock、orchestrator 构建链等）。冲突保留 fork 意图（Agnes 模型目录、moonshot-cn 镜像、scoped `PI_NPM_SCOPE` 发布、`excludeExtensionPaths`、`retry-classification` 双参签名与 fork-test skip），并再合并 `origin/main` 上此前未拉取的中间同步（至 v0.80.3）。合并提交 `1e932867` + `2ebfe6fc`，已 push `origin/main`。pre-commit 检查（biome / pinned-deps / ts-imports / shrinkwrap / install-lock / `tsgo --noEmit` / browser-smoke）全绿。
+- **发布 pi @livos v0.80.6**（2026-07-13）：`pi` 打 tag `v0.80.6`（`2ebfe6fc`）并推送 `origin`；[`asiachrispy/pi` GitHub Release v0.80.6](https://github.com/asiachrispy/pi/releases/tag/v0.80.6) 已创建。**npm 发布待本机 `npm login` 后执行**：`cd pi && PI_NPM_SCOPE=@livos PI_NPM_PROVENANCE=0 node scripts/publish.mjs`（当前 registry token 401，`@livos/pi-*` 仍停留在 0.80.3）。**pi-app macOS 发布暂缓**：`pi-app` 工作区存在未完成的 upstream 合并冲突（`UU` 文件），需先解决后再升版打包。
+
 ### Fixed
 - **`jtbd-sync` 扩展启动报 `(0, _piCodingAgent.isAssistantMessage) is not a function`**（workspace `.pi/extensions/jtbd-sync/index.ts`）：扩展 `import { isAssistantMessage } from "@earendil-works/pi-coding-agent"`，但 `@earendil-works/pi-coding-agent` 当前 fork 为 `@livos/pi-coding-agent@0.80.3`，该 fork `dist/index.js` 并不 named-export `isAssistantMessage`（上游历史上以 `examples/extensions/plan-mode` 内部函数形式存在，未作为公开 API 暴露），运行每条 assistant 回复结束触发 `message_end` 时都会抛一次。改为扩展内本地守卫 `isAssistantMessage(message: AgentMessage | unknown): boolean`（沿用 `(role === "assistant")` 判断，与 `examples/extensions/plan-mode` 一致），消除对未导出 helper 的隐式依赖。
 
