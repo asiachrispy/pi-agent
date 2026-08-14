@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Changed
+- **拉取并合并 pi-app 上游（agegr/pi-web → pi-app）**（2026-08-14）：修正失效的 `upstream=earendil-works/pi-web` 为真实上游 `agegr/pi-web`，补全浅克隆历史后合并 `upstream/main` 至 `77e482d`（v0.8.8，上游新增 259 commits）。合并保留 fork 的 Livo 多租户/鉴权、中文 i18n、macOS standalone、`@livos/pi-*@0.80.3` 与成熟核心 UI；吸收无冲突的安全/路径处理、Markdown/frontmatter、文件工具、PWA 资源及底层工具增量。依赖 `ModelRuntime` / 新事件协议等 Pi 0.84.1 能力及其未接线 UI/API 暂不启用，避免破坏本地/Livo 部署边界。验证：`tsc --noEmit`、Vitest 97 files / 450 tests、上游原生 Node 测试中除 2 个既有 fork 基线文件外其余逐文件通过、`swift build`、`swift test`（2/2）全绿。
+
 ### Fixed
 - **补回 ChatInput i18n**（pi-app）：合并 agegr/pi-web 后 `ChatInput` 偏上游硬编码英文；重新接入 `useI18n`，覆盖 placeholder / Steer·Follow-up·Send·Stop / thinking·tool preset / compact / sound / slash·@ 文件菜单 / queue recall 等文案，并扩展 `en`/`zh-CN` 的 `chatInput.*` keys。`ChatWindow` 合并前本就无 i18n，无需回补。
 
