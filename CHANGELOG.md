@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 ### Changed
+- **拉取并合并 pi-app 上游（agegr/pi-web → pi-app）**（2026-08-20）：合并 `upstream/main` 从 `77e482d`（v0.8.8）至 `2a6e537`（v0.8.9，12 commits）。吸收：`/api/cwd/validate` 与 `/api/worktrees` 返回 `projectKey` / `currentWorktreePath`（`session-reader` 同步写 `projectKey`）、工具执行进度（`lib/tool-execution-progress` + `useAgentSession` / `ChatWindow`）、聊天通知居中（`ChatWindow.notices`）、`bin/pi-app.js` 接入 `process-lifecycle` 转发 shutdown 信号、`AgentSessionLike` 补 `executeBash` / `abortBash` / `isBashRunning` 接口。保留 fork 成熟实现不回退：Livo 多租户、`@livos/pi-*@0.80.3`、rpc-manager `createAgentSession` 体系、SessionSidebar / AppShell 的 cwd 与 Livo 工作区展示；上游针对 services 体系 / 0.84.x 的 bash 扩展（`project-command-env` 需 SDK `InlineExtension`）与 project-identity UI 重构未启用（对应新文件 / 测试已移除），依赖升级（pi 0.84.2、next 16.3.1 等）暂缓以保持 `@livos` alias 与 lock 一致。验证：`tsc --noEmit`、Vitest 97 files / 450 tests 全绿。
 - **拉取并合并 pi-app 上游（agegr/pi-web → pi-app）**（2026-08-14）：修正失效的 `upstream=earendil-works/pi-web` 为真实上游 `agegr/pi-web`，补全浅克隆历史后合并 `upstream/main` 至 `77e482d`（v0.8.8，上游新增 259 commits）。合并保留 fork 的 Livo 多租户/鉴权、中文 i18n、macOS standalone、`@livos/pi-*@0.80.3` 与成熟核心 UI；吸收无冲突的安全/路径处理、Markdown/frontmatter、文件工具、PWA 资源及底层工具增量。依赖 `ModelRuntime` / 新事件协议等 Pi 0.84.1 能力及其未接线 UI/API 暂不启用，避免破坏本地/Livo 部署边界。验证：`tsc --noEmit`、Vitest 97 files / 450 tests、上游原生 Node 测试中除 2 个既有 fork 基线文件外其余逐文件通过、`swift build`、`swift test`（2/2）全绿。
 
 ### Fixed
